@@ -1,0 +1,1117 @@
+## Fuzzy Clustering 
+library(e1071)
+library(tm) #Text Mining Package
+library(scatterplot3d)
+library(readr)
+Andy_Weir_The_Martian <- read_csv("~/Masters Projet/Amazon-book reviews/Andy-Weir-The-Martian.csv", 
+                                  col_names = FALSE)
+## Amazon Review Dataset File 1
+length(Andy_Weir_The_Martian)
+head(Andy_Weir_The_Martian)
+tail(Andy_Weir_The_Martian)
+Andy = Andy_Weir_The_Martian[-(1:2)]
+Andy= Andy[-(30:length(Andy))]
+length(Andy)
+#Andy <-na.omit(Andy)
+
+doc.vec <- VectorSource(Andy) # Construct a Source of Vector as input
+doc.corpus <- Corpus(doc.vec) # Corpus- Function for Natural Language document
+summary(doc.corpus)
+#tm_map: function for transformation of document
+doc.corpus <- tm_map(doc.corpus, content_transformer(tolower))
+doc.corpus <- tm_map(doc.corpus,removePunctuation)
+doc.corpus <- tm_map(doc.corpus, removeNumbers)
+doc.corpus <- tm_map(doc.corpus, removeWords, stopwords("english"))
+
+library(SnowballC) #Comparison of Vocabulary
+doc.corpus <- tm_map(doc.corpus, stemDocument)
+doc.corpus <- tm_map(doc.corpus, stripWhitespace)
+inspect(doc.corpus[8])
+inspect(doc.corpus[8])
+TDM <- TermDocumentMatrix(doc.corpus) # row: terms(words) column: document(webpages)
+TDM
+inspect(TDM[1:10,1:10])
+DTM <- DocumentTermMatrix(doc.corpus) # row: document(webpages) column: terms(words)
+inspect(DTM[1:10,1:10])
+findFreqTerms(TDM,1500)  #each of this words occurred more than 1500 times
+findAssocs(TDM, "like", 0.7)
+TDM.common = removeSparseTerms(TDM,0.1) # commonly occuring terms
+dim(TDM) # dimensions
+dim(TDM.common)
+inspect(TDM.common[1:10,1:10])
+
+library(slam)
+TDM.dense <- as.matrix(TDM.common) # attempt to turn its argument into matrix
+TDM.dense
+# Object.size provides an estimate of the memory that is being used to store an R object
+object.size(TDM.common)
+object.size(TDM.dense)
+
+library(wordcloud)
+library(RColorBrewer)
+palette <- brewer.pal(9,"PuBuGn")[-(1:4)] #brewer.pal: function for color Palette
+
+wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1, color= palette)
+
+#Convert dtm to matrix
+m <- as.matrix(DTM)
+
+x <- rbind(m)
+x <-t(x)
+result <- cmeans(x,3,22571,verbose = TRUE,method = "cmeans")
+Iteration:   1, Error: 349.9586819827
+Iteration:   2, Error: 343.4546797738
+Iteration:   3, Error: 331.8340362182
+Iteration:   4, Error: 318.6646315930
+Iteration:   5, Error: 306.8037909299
+Iteration:   6, Error: 296.5949165003
+Iteration:   7, Error: 288.0274102920
+Iteration:   8, Error: 280.9199809339
+Iteration:   9, Error: 275.0895496087
+Iteration:  10, Error: 270.3671313525
+Iteration:  11, Error: 266.6034935822
+Iteration:  12, Error: 263.6510287033
+Iteration:  13, Error: 261.3611411291
+Iteration:  14, Error: 259.5980598674
+Iteration:  15, Error: 258.2502528276
+Iteration:  16, Error: 257.2305696997
+Iteration:  17, Error: 256.4700018766
+Iteration:  18, Error: 255.9118996179
+Iteration:  19, Error: 255.5089933411
+Iteration:  20, Error: 255.2223508443
+Iteration:  21, Error: 255.0208703071
+Iteration:  22, Error: 254.8805622974
+Iteration:  23, Error: 254.7835115677
+Iteration:  24, Error: 254.7166905827
+Iteration:  25, Error: 254.6708181413
+Iteration:  26, Error: 254.6393803262
+Iteration:  27, Error: 254.6178529775
+Iteration:  28, Error: 254.6031157141
+Iteration:  29, Error: 254.5930257793
+Iteration:  30, Error: 254.5861154931
+Iteration:  31, Error: 254.5813808647
+Iteration:  32, Error: 254.5781354158
+Iteration:  33, Error: 254.5759097423
+Iteration:  34, Error: 254.5743827585
+Iteration:  35, Error: 254.5733347211
+Iteration:  36, Error: 254.5726151568
+Iteration:  37, Error: 254.5721209669
+Iteration:  38, Error: 254.5717814732
+Iteration:  39, Error: 254.5715481991
+Iteration:  40, Error: 254.5713878806
+Iteration:  41, Error: 254.5712776834
+Iteration:  42, Error: 254.5712019276
+Iteration:  43, Error: 254.5711498429
+Iteration:  44, Error: 254.5711140295
+Iteration:  45, Error: 254.5710894022
+Iteration:  46, Error: 254.5710724660
+Iteration:  47, Error: 254.5710608184
+Iteration:  48, Error: 254.5710528075
+Iteration:  49, Error: 254.5710472977
+Iteration:  50 converged, Error: 254.5710435079
+
+>print(result)
+            2                                  2 
+                     abortedbrbrth                             abound 
+                                 2                                  2 
+                        abovebrbri                             abrupt 
+                                 2                                  2 
+                        abruptspan                            absolut 
+                                 2                                  2 
+                            absorb                             absurd 
+                                 2                                  2 
+                             abund                               abus 
+                                 2                                  2 
+                            academ                             accent 
+                                 2                                  2 
+                            accept                             access 
+                                 2                                  2 
+                             accid                           accident 
+                                 2                                  2 
+                  accidentsinstead                            acclaim 
+                                 2                                  2 
+                           accolad                           accommod 
+                                 2                                  2 
+                         accompani                         accomplish 
+                                 2                                  2 
+                           account                    accountbrbrstun 
+                                 2                                  2 
+                       accountspan                              accur 
+                                 2                                  2 
+                          accuraci                       accuracyspan 
+                                 2                                  2 
+                     accuratebrlov                       accuratespan 
+                                 2                                  2 
+                     accuratetspan                           accustom 
+                                 2                                  2 
+                               ace                              acerb 
+                                 2                                  2 
+                            achiev                         acknowledg 
+                                 2                                  2 
+                            across                        acrossbrwel 
+                                 2                                  2 
+                        acrossspan                                act 
+                                 2                                  2 
+                            action                       actionbrbrth 
+                                 3                                  2 
+                        actionpack                         actionspan 
+                                 2                                  2 
+                             activ                              actor 
+                                 2                                  2 
+                     actorsactress                             actual 
+                                 2                                  3 
+                            acuiti                               adam 
+                                 2                                  2 
+                             adapt                     adaptationspan 
+                                 2                                  2 
+                               add                            addedto 
+                                 2                                  2 
+                            addict                       addictivebra 
+                                 2                                  2 
+                             addit                       addonbrbrmad 
+                                 2                                  2 
+                           address                      addressedspan 
+                                 2                                  2 
+                     adequatebrbri                              adher 
+                                 2                                  2 
+                            adject                             adjust 
+                                 2                                  2 
+                          administ                          administr 
+                                 2                                  2 
+                             admir                              admit 
+                                 2                                  2 
+                           adolesc                               ador 
+                                 2                                  2 
+                         adrenalin                             adroit 
+                                 2                                  2 
+                             adult                             advanc 
+                                 2                                  2 
+                          advantag                           adventur 
+                                 2                                  3 
+                      adventureand                  adventurebrbrbeen 
+                                 2                                  2 
+                     adventurespan                     adventuresspan 
+                                 2                                  2 
+             adventuresurvivalspac                     adventuretspan 
+                                 2                                  2 
+                            advers                          adversari 
+                                 2                                  2 
+                            advert                           advertis 
+                                 2                                  2 
+                             advic                          aerodynam 
+                                 2                                  2 
+                          aeronaut                           aerospac 
+                                 2                                  2 
+                            affabl                             affect 
+                                 2                                  2 
+                             affin                             affirm 
+                                 2                                  2 
+                    aficionadospan                          afootspan 
+                                 2                                  2 
+                            afraid                          aftermath 
+                                 2                                  2 
+                         afternoon                      afternoonspan 
+                                 2                                  2 
+                      afterthought                          afterward 
+                                 2                                  2 
+                    afterwardsspan                         againbrbri 
+                                 2                                  2 
+                          againbrh                             againi 
+                                 2                                  2 
+                         againspan                         againtspan 
+                                 2                                  2 
+                               age                              agenc 
+                                 2                                  2 
+                            agenda                              agent 
+                                 2                                  2 
+                            agesth                             aggrav 
+                                 2                                  2 
+                            aghast                                ago 
+                                 2                                  2 
+                         agobrbrth                               agon 
+                                 2                                  2 
+                             agoni                            agospan 
+                                 2                                  2 
+                              agre                         agricultur 
+                                 2                                  2 
+                             ahead                               ahem 
+                                 2                                  2 
+                              ahhh                                aim 
+                                 2                                  2 
+                              aint                                air 
+                                 2                                  2 
+                           airless                            airplan 
+                                 2                                  2 
+                           airport                               akin 
+                                 2                                  2 
+                               ala                               alan 
+                                 2                                  2 
+                            albeit                             albert 
+                                 2                                  2 
+                           alchemi                             aldrin 
+                                 2                                  2 
+                              alec                              aleck 
+                                 2                                  2 
+                             alert                         alertbrbrw 
+                                 2                                  2 
+                           algebra                              alien 
+                                 2                                  2 
+                          aliensno                         aliensspan 
+                                 2                                  2 
+                          aliens�                              align 
+                                 2                                  2 
+                              alik                          alikespan 
+                                 2                                  2 
+                              aliv                     alivebrbrgreat 
+                                 2                                  2 
+                   alivebrbrimagin                        alivebrbrth 
+                                 2                                  2 
+                        alivebrsol                          alivespan 
+                                 2                                  2 
+                               all                        allbrbrfrom 
+                                 2                                  2 
+                        allbrbrlog                          allbrseem 
+                                 2                                  2 
+                             alleg                              allen 
+                                 2                                  2 
+                             alley                            alleyso 
+                                 2                                  2 
+                         alleyspan                               alli 
+                                 2                                  2 
+                           allinal                              alliv 
+                                 2                                  2 
+                             alloc                              allot 
+                                 2                                  2 
+                             allow                            allspan 
+                                 2                                  2 
+                            alltim                           alltspan 
+                                 2                                  2 
+                          almighti                             almost 
+                                 2                                  3 
+                              alon                         aloneonmar 
+                                 3                                  2 
+                            aloner                          alonespan 
+                                 2                                  2 
+                           aloneth                              along 
+                                 2                                  2 
+                          alongsid                          alongspan 
+                                 2                                  2 
+                              alot                              aloud 
+                                 2                                  2 
+                           alreadi                        alreadyspan 
+                                 2                                  2 
+                           alreasi                            alright 
+                                 2                                  2 
+                              also                          alsobrthi 
+                                 3                                  2 
+                             altar                      alteregobrbri 
+                                 2                                  2 
+                            altern                           although 
+                                 2                                  2 
+                           altitud                           altogeth 
+                                 2                                  2 
+                          aluminum                              alway 
+                                 2                                  2 
+                alwayscrackingajok                            amateur 
+                                 2                                  2 
+                        amateurish                               amaz 
+                                 2                                  3 
+                      amazingbrbri                  amazingbrupdateth 
+                                 2                                  2 
+                       amazingdont                      amazinglyspan 
+                                 2                                  2 
+                       amazingspan                       amazingtspan 
+                                 2                                  2 
+                            amazon                          amazon’ 
+                                 2                                  2 
+                     ambiencebrbri                           american 
+                                 2                                  2 
+                             among                            amongst 
+                                 2                                  2 
+                            amount                          amountani 
+                                 2                                  2 
+                               amp                               amus 
+                                 2                                  2 
+                            analog                            analysi 
+                                 2                                  2 
+                            analyt                             analyz 
+                                 2                                  2 
+                           ancient                          ancillari 
+                                 2                                  2 
+                             andag                           anderson 
+                                 2                                  2 
+                              andi                              andor 
+                                 3                                  2 
+                            andwel                            andybri 
+                                 2                                  2 
+                           andyfor                           andyspan 
+                                 2                                  2 
+                          aneurysm                              anger 
+                                 2                                  2 
+                              angl                          anglespan 
+                                 2                                  2 
+                             angri                              angst 
+                                 2                                  2 
+                           anguish                               anni 
+                                 2                                  2 
+                             annoy                               anor 
+                                 2                                  2 
+                             anoth                        anotherspan 
+                                 3                                  2 
+                            answer                   answersbrbrgreat 
+                                 2                                  2 
+                        antagonist                            antenna 
+                                 2                                  2 
+                              anti                              antic 
+                                 2                                  2 
+                           anticip                        anticlimact 
+                                 2                                  2 
+                           antidot                           antigrav 
+                                 2                                  2 
+                    antihudsonspan                           antithet 
+                                 2                                  2 
+                           anxieti                            anxious 
+                                 2                                  2 
+                           anybodi                        anyhowbrbri 
+                                 2                                  2 
+                            anymor                              anyon 
+                                 2                                  3 
+                      anyonebrread                         anyonespan 
+                                 2                                  2 
+                             anyth                          anythingi 
+                                 2                                  2 
+                            anytim                             anyway 
+                                 2                                  2 
+                          anywaybr                         anywayseem 
+                                 2                                  2 
+                        anywayspan                            anywher 
+                                 2                                  2 
+                             apart                          apocalyps 
+                                 2                                  2 
+                            apollo                              apolo 
+                                 2                                  2 
+                            apolog                                app 
+                                 2                                  2 
+                             appar                             appeal 
+                                 2                                  2 
+                        appealspan                             appear 
+                                 2                                  2 
+                            appeas                            applaud 
+                                 2                                  2 
+                             appli                             applic 
+                                 2                                  2 
+                           appoint                            appreci 
+                                 2                                  2 
+                 appreciatedbrthat                     appreciatespan 
+                                 2                                  2 
+                         apprehens                            apprici 
+                                 2                                  2 
+                          approach                           appropri 
+                                 2                                  2 
+                          approxim                            aptitud 
+                                 2                                  2 
+                              aqua                            aquaman 
+                                 2                                  2 
+                               arc                              arcan 
+                                 2                                  2 
+                    arcanebutenjoy                             archiv 
+                                 2                                  2 
+                               are                               area 
+                                 2                                  2 
+                             arear                          arebrther 
+                                 2                                  2 
+                             arent                           aren’t 
+                                 2                                  2 
+                              argo                               argu 
+                                 2                                  2 
+                          argument                               aris 
+                                 2                                  2 
+                         arisespan                           arithmet 
+                                 2                                  2 
+                              armi                               aros 
+                                 2                                  2 
+                            around                         aroundspan 
+                                 2                                  2 
+                            aroung                              arous 
+                                 2                                  2 
+                             array                              arriv 
+                                 2                                  2 
+                               art                             arthur 
+                                 2                                  2 
+                            articl                           artifact 
+                                 2                                  2 
+                          artifici                             artist 
+                                 2                                  2 
+                          artistri                          artsyspan 
+                                 2                                  2 
+                              asap                           asapspan 
+                                 2                                  2 
+                       asbrbrworth                             asbrhi 
+                                 2                                  2 
+                            ascend                             ascent 
+                                 2                                  2 
+                             asham                               asid 
+                                 2                                  2 
+                         asidespan                             asimov 
+                                 2                                  2 
+                               ask                              askew 
+                                 2                                  2 
+                           asminov                              aspan 
+                                 2                                  2 
+                            aspect                        aspectsfrom 
+                                 2                                  2 
+                             aspir                                ass 
+                                 2                                  2 
+                           assault                             assert 
+                                 2                                  2 
+                            assess                              asset 
+                                 2                                  2 
+                            assign                             assist 
+                                 2                                  2 
+                            associ                             assort 
+                                 2                                  2 
+                             assum                            assumpt 
+                                 2                                  2 
+                             assur                           astonish 
+                                 2                                  2 
+                           astound                        astronaught 
+                                 2                                  2 
+                         astronaut                      astronautbrif 
+                                 3                                  2 
+         astronautengineerbotanist                  astronautsbrbrthi 
+                                 2                                  2 
+                astronautsbrbrwhat                      astronautspan 
+                                 2                                  2 
+                    astronautsspan                       astronaut’ 
+                                 2                                  2 
+                         astronomi                          astrophys 
+                                 2                                  2 
+                    astrophysicist                          astrotech 
+                                 2                                  2 
+                               ate                               ater 
+                                 2                                  2 
+                           atheist                              atlas 
+                                 2                                  2 
+                         atmospher                               atom 
+                                 2                                  2 
+                            attach                             attack 
+                                 2                                  2 
+                           attempt                    attemptsbrbrwhi 
+                                 2                                  2 
+                            attend                             attent 
+                                 2                                  2 
+                     attentiongrab                      attentionspan 
+                                 2                                  2 
+                            attest                            attitud 
+                                 2                                  2 
+                      attitudespan                            attract 
+                                 2                                  2 
+                          attribut                             audibl 
+                                 2                                  2 
+                           audienc                       audiencespan 
+                                 2                                  2 
+                     audiencetspan                              audio 
+                                 2                                  2 
+                         audiobook                                aug 
+                                 2                                  2 
+                           authent                   authenticityspan 
+                                 2                                  2 
+                     authenticspan                             author 
+                                 2                                  3 
+                        authorgood                          authornow 
+                                 2                                  2 
+                        authorspan                        authortspan 
+                                 2                                  2 
+                           authour                      autobiographi 
+                                 2                                  2 
+                             autom                            automat 
+                                 2                                  2 
+                             avail                      availablespan 
+                                 2                                  2 
+                            averag                              avers 
+                                 2                                  2 
+                             avert                               avid 
+                                 2                                  2 
+                            avitar                              avoid 
+                                 2                                  2 
+                             await                               awak 
+                                 2                                  2 
+                            awaken                               awar 
+                                 2                                  2 
+                             award                         awardsspan 
+                                 2                                  2 
+                              away                       awaybrbrandi 
+                                 3                                  2 
+                      awaybrbrhigh                         awaybrbrth 
+                                 2                                  2 
+                          awayspan                                awe 
+                                 2                                  2 
+                            awesom                      awesomebrbrim 
+                                 2                                  2 
+                       awesomespan                          awesomest 
+                                 2                                  2 
+                      awesometspan                              awhil 
+                                 2                                  2 
+                        awhilespan                            awkward 
+                                 2                                  2 
+                              awri                       ayyyyyyyspan 
+                                 2                                  2 
+                               azz                              babbl 
+                                 2                                  2 
+                              babi                               back 
+                                 2                                  3 
+                          backdrop                         background 
+                                 2                                  2 
+             backgroundbrbrcertain                     backgroundspan 
+                                 2                                  2 
+                          backhand                   backoftheenvelop 
+                                 2                                  2 
+                          backpack                           backstab 
+                                 2                                  2 
+                         backstori                          backtrack 
+                                 2                                  2 
+                               bad                             badass 
+                                 2                                  2 
+                         badbrbrim                               badg 
+                                 2                                  2 
+                         badlyspan                            badspan 
+                                 2                                  2 
+                             baffl                          bafflegab 
+                                 2                                  2 
+                              bail                   bailedbrbrfortun 
+                                 2                                  2 
+                         bailiwick                               bait 
+                                 2                                  2 
+                            balanc                               balk 
+                                 2                                  2 
+                              ball                           ballpark 
+                                 2                                  2 
+                               bam                              bambi 
+                                 2                                  2 
+                               ban                               band 
+                                 2                                  2 
+                         bandwagon                               bang 
+                                 2                                  2 
+                          bankrupt                             banter 
+                                 2                                  2 
+                              bare                               barn 
+                                 2                                  2 
+                            barrag                             barren 
+                                 2                                  2 
+                              base                          basedspan 
+                                 2                                  2 
+                        basedtspan                               basi 
+                                 2                                  2 
+                             basic                         basistspan 
+                                 2                                  2 
+                           bastard                                bat 
+                                 2                                  2 
+                            batter                            batteri 
+                                 2                                  2 
+                             battl                              beach 
+                                 2                                  2 
+                         beachpool                          beachspan 
+                                 2                                  2 
+                            beaker                               beam 
+                                 2                                  2 
+                              bear                            bearabl 
+                                 2                                  2 
+                            beasti                               beat 
+                                 2                                  2 
+                            beauti                    beautifullyspan 
+                                 2                                  2 
+                            bebrth                              becam 
+                                 2                                  2 
+                             becom                                bed 
+                                 2                                  2 
+                            bedsid                             bedtim 
+                                 2                                  2 
+                      bedtimebrbri                               beer 
+                                 2                                  2 
+                             befal                              befel 
+                                 2                                  2 
+                        beforespan                                beg 
+                                 2                                  2 
+                             began                              begin 
+                                 2                                  2 
+                       beginsbrbrw                           behavior 
+                                 2                                  2 
+                            behind                         beingsspan 
+                                 3                                  2 
+                            belief                             believ 
+                                 2                                  3 
+                         believabl                        believablea 
+                                 2                                  2 
+              believablebrbrstrand                   believablebrbrth 
+                                 2                                  2 
+                    believablespan                    believabletspan 
+                                 2                                  2 
+                    believablyflaw            believingbrbrfurthermor 
+                                 2                                  2 
+                              bell                              belli 
+                                 2                                  2 
+                     belowbrmcguyv                               bend 
+                                 2                                  2 
+                           beneath                            benefit 
+                                 2                                  2 
+                            benign                               bent 
+                                 2                                  2 
+                             besid                             bespan 
+                                 2                                  2 
+                              best                           bestbrin 
+                                 3                                  2 
+                           bestsel                           bestspan 
+                                 2                                  2 
+                            bestth                                bet 
+                                 2                                  2 
+                              beta                             better 
+                                 2                                  3 
+                   betterbrbrhowev                      betterbrbryou 
+                                 2                                  2 
+                        betterspan                   betweenbrbrgreat 
+                                 2                                  2 
+                      beveragespan                              bewar 
+                                 2                                  2 
+                            beyond                               bias 
+                                 2                                  2 
+                              bibl                                big 
+                                 2                                  2 
+                            bigger                            biggest 
+                                 2                                  2 
+                              bill                              billi 
+                                 2                                  2 
+                           billion                    billionbrbrhigh 
+                                 2                                  2 
+                              bind                       bindingtspan 
+                                 2                                  2 
+                              bing                          bingeread 
+                                 2                                  2 
+                        bingewatch                                bio 
+                                 2                                  2 
+                      biochemistri                           biograph 
+                                 2                                  2 
+                            biolog                          biologist 
+                                 2                                  2 
+                            biopic                                bit 
+                                 2                                  3 
+                     bitbrbroveral                            bitbrin 
+                                 2                                  2 
+                              bite                              biter 
+                                 2                                  2 
+                             bites                        bitingtspan 
+                                 2                                  2 
+                           bitspan                           bitsspan 
+                                 2                                  2 
+                      bizarrebrbri                              black 
+                                 2                                  2 
+                              blah                              blame 
+                                 2                                  2 
+                             blank                              blast 
+                                 2                                  2 
+                           blatant                              blaze 
+                                 2                                  2 
+                             bleak                              blend 
+                                 2                                  2 
+                              blew                              blind 
+                                 2                                  2 
+                             bloat                              block 
+                                 2                                  2 
+                         blockbust                    blockbusterspan 
+                                 2                                  2 
+                              blog                            blogger 
+                                 2                                  2 
+                            bloggi                             bloodi 
+                                 2                                  2 
+                           blossom                               blow 
+                                 2                                  2 
+                             blown                               blue 
+                                 2                                  2 
+                           blunder                             bluray 
+                                 2                                  2 
+                             blurb                              board 
+                                 2                                  2 
+                       boaringspan                               boat 
+                                 2                                  2 
+                              bodi                                bog 
+                                 2                                  2 
+                        boggeddown                              boggl 
+                                 2                                  2 
+                              bolt                               bomb 
+                                 2                                  2 
+                           bombard                               bond 
+                                 2                                  2 
+                             bonus                                boo 
+                                 2                                  2 
+                              boob                               book 
+                                 2                                  1 
+                            bookah                            bookand 
+                                 2                                  2 
+                         bookbrbra                     bookbrbrbottom 
+                                 2                                  2 
+                      bookbrbrcant                         bookbrbrin 
+                                 2                                  2 
+                        bookbrbrit                       bookbrbrpick 
+                                 2                                  2 
+                        bookbrbrso                         bookbrbrst 
+                                 2                                  2 
+                        bookbrbrth                      bookbrbrthank 
+                                 2                                  2 
+                       bookbrbrthi                       bookbrbrweir 
+                                 2                                  2 
+                           bookbri                           bookbrit 
+                                 2                                  2 
+                        bookbrread                     bookbrscientif 
+                                 2                                  2 
+                         bookbrthi                            bookbut 
+                                 2                                  2 
+                           bookgav                             bookha 
+                                 2                                  2 
+                             booki                            booklov 
+                                 2                                  2 
+                          bookmark                            bookmay 
+                                 2                                  2 
+                            bookon                              books 
+                                 2                                  2 
+                       booksbrbrbi                      booksbrbreven 
+                                 2                                  2 
+                      bookscomspan                      bookshelfspan 
+                                 2                                  2 
+                            bookso                           bookspan 
+                                 2                                  3 
+                         booksspan                           bookstor 
+                                 2                                  2 
+                         booktspan                            bookwel 
+                                 2                                  2 
+                           bookyou                               boon 
+                                 2                                  2 
+                             boook                               boot 
+                                 2                                  2 
+                            booyah                             border 
+                                 2                                  2 
+                              bore                            boredom 
+                                 3                                  2 
+                        boringspan                        boringtspan 
+                                 2                                  2 
+                              born                             borrow 
+                                 2                                  2 
+                            boston                              botan 
+                                 2                                  2 
+                            botani                           botanist 
+                                 2                                  2 
+botanistandengineerturnedastronaut                  botanistastronaut 
+                                 2                                  2 
+                     botanistengin            botanistengineerbrbrbut 
+                                 2                                  2 
+                    botanistmechan                         botanistor 
+                                 2                                  2 
+                      botanistspan                             botann 
+                                 2                                  2 
+                       bothbrbrfor                             bother 
+                                 2                                  2 
+                          bothspan                             bottom 
+                                 2                                  2 
+                    bottombrbrhigh                         bottomless 
+                                 2                                  2 
+                            bought                              bounc 
+                                 2                                  2 
+                             bound                           boundari 
+                                 2                                  2 
+                         boundless                              bourn 
+                                 2                                  2 
+                              bova                                box 
+                                 2                                  2 
+                               boy                           bradburi 
+                                 2                                  2 
+                       braggadocio                              brain 
+                                 2                                  2 
+                           brainer                           brainpow 
+                                 2                                  2 
+                            bralso                             branch 
+                                 2                                  2 
+                             brand                              braun 
+                                 2                                  2 
+                           bravado                              brave 
+                                 2                                  2 
+                           braveri                            bravest 
+                                 2                                  2 
+                             bravo                          bravospan 
+                                 2                                  2 
+                             brawn                               bray 
+                                 2                                  2 
+                       braybrbryou                               brbi 
+                                 2                                  2 
+                           brbrand                              brbri 
+                                 2                                  2 
+                            brbrin                            brbrmar 
+                                 2                                  2 
+                          brbrveri                              brbut 
+                                 2                                  2 
+                            breach                              break 
+                                 2                                  2 
+                         breakdown                            breaker 
+                                 2                                  2 
+                            breath                         breathless 
+                                 2                                  2 
+                         breathtak                              breez 
+                                 2                                  2 
+                            breezi                              brett 
+                                 2                                  2 
+                           breviti                        brevityspan 
+                                 2                                  2 
+                               bri                              bridg 
+                                 2                                  2 
+                             brief                             bright 
+                                 2                                  2 
+                          brighten                          brillianc 
+                                 2                                  2 
+                         brilliant                      brilliantspan 
+                                 2                                  2 
+                    brillianttspan                               brim 
+                                 2                                  2 
+                             bring                   brinkbrbrexhibit 
+                                 2                                  2 
+                             brisk                             brleav 
+                                 2                                  2 
+                             broad                          broadcast 
+                                 2                                  2 
+                           broaden                           broccoli 
+                                 2                                  2 
+                              broh                              broke 
+                                 2                                  2 
+                            broken                              brood 
+                                 2                                  2 
+                           brother                            brought 
+                                 2                                  2 
+                             brown                           brpenetr 
+                                 2                                  2 
+                              brth                             brutal 
+                                 2                                  2 
+                            brveri                             brwell 
+                                 2                                  2 
+                           brwhich                            bryoull 
+                                 2                                  2 
+                             bspan                                btw 
+                                 2                                  2 
+                             bubbl                               buck 
+                                 2                                  2 
+                               bud                              buddi 
+                                 2                                  2 
+                            budget                          buenospan 
+                                 2                                  2 
+                              buff                          buffsspan 
+                                 2                                  2 
+                               bug                              bugey 
+                                 2                                  2 
+                            bugger                              build 
+                                 2                                  2 
+                             built                         builtbrand 
+                                 2                                  2 
+                              bulk                               bull 
+                                 2                                  2 
+                              bump                              bumpi 
+                                 2                                  2 
+                             bunch                             burden 
+                                 2                                  2 
+                       bureaucraci                         bureaucrat 
+                                 2                                  2 
+                              buri                               burn 
+                                 2                                  2 
+                             burnt                              burst 
+                                 2                                  2 
+                              busi                               bust 
+                                 2                                  2 
+                            buster                             butbri 
+                                 2                                  2 
+                              butt                           buttload 
+                                 2                                  2 
+                            button                                buy 
+                                 2                                  2 
+                        buyingspan                               buzz 
+                                 2                                  2 
+                           bybrtru                             bypass 
+                                 2                                  2 
+                            byspan                               cabl 
+                                 2                                  2 
+                             calam                            calamit 
+                                 2                                  2 
+                              calc                             calcul 
+                                 2                                  2 
+                             calib                    caliberbrsurviv 
+                                 2                                  2 
+                              call                               calm 
+                                 2                                  2 
+                          calmhead                         camaraderi 
+                                 2                                  2 
+                              came                               camp 
+                                 2                                  2 
+                           campbel                              campi 
+                                 2                                  2 
+                               can                          canbrbrit 
+                                 3                                  2 
+                         canbrbrth                             cancel 
+                                 2                                  2 
+                          cancould                              candi 
+                                 2                                  2 
+                            candid                              cando 
+                                 2                                  2 
+                           canspan                               cant 
+                                 2                                  3 
+                        cantbrbeat                          cantbrget 
+                                 2                                  2 
+                       cantputdown                      cantputitdown 
+                                 2                                  2 
+                           can’t                             capabl 
+                                 2                                  2 
+                             capac                          capacitor 
+                                 2                                  2 
+                            capibl                            capitol 
+                                 2                                  2 
+                            capsul                            captain 
+                                 2                                  2 
+                       captainslog                            caption 
+                                 2                                  2 
+                            captiv                    captivatingspan 
+                                 2                                  2 
+                            captur                                car 
+                                 2                                  2 
+                            carbon                               card 
+                                 2                                  2 
+                         cardboard                               care 
+                                 2                                  2 
+                            career                       careerinspir 
+                                 2                                  2 
+                           carefre                      carefullyspan 
+                                 2                                  2 
+                       carefulspan                           carespan 
+                                 2                                  2 
+                              carl                           carnivor 
+                                 2                                  2 
+                         carpentri                              carri 
+                                 2                                  2 
+                            carter                         cartoonish 
+                                 2                                  2 
+                            caruso                               carv 
+                                 2                                  2 
+                              case                           casespan 
+                                 2                                  2 
+                             casey                               cask 
+                                 2                                  2 
+                              cast                           castaway 
+                                 2                                  2 
+                       castawayand                    castawaybrbrand 
+                                 2                                  2 
+                    castawaybrbrim                       castawaystyl 
+                                 2                                  2 
+                       castaway”                             casual 
+                                 2                                  2 
+                               cat                            catalog 
+                                 2                                  2 
+                        catastroph                   catastrophesolut 
+                                 2                                  2 
+                             catch                             catchi 
+                                 2                                  2 
+                          categori                     categorybrbrth 
+                                 2                                  2 
+                           cathart                             caught 
+                                 2                                  2 
+                              caus                            caution 
+                                 2                                  2 
+                            cavali                               cave 
+                                 2                                  2 
+                            cavern                          ccastaway 
+                                 2                                  2 
+                            cdspan                               ceas 
+                                 2                                  2 
+                              ceil                             celebr 
+                                 2                                  2 
+                              cell                             censor 
+                                 2                                  2 
+                              cent                             center 
+                                 2                                  2 
+                          centimet                              centr 
+                                 2                                  2 
+                           central        centralbrthroughoutbrbrgood 
+                                 2                                  2 
+                       centsbrbrth                          centsspan 
+                                 2                                  2 
+                           centuri                      centurybrbrth 
+                                 2                                  2 
+                            cerebr                            certain 
+                                 2                                  2 
+                           certifi                              chair 
+                                 2                                  2 
+                             chalk                           challeng 
+                                 2                                  2 
+                   challengebrbrmi                  challengesbrmcgiv 
+                                 2                                  2 
+                    challengesspan                              chanc 
+                                 2                                  2 
+                          chandler                              chang 
+                                 2                                  2 
+                              chao                            chapter 
+                                 2                                  2 
+                       chapterspan                       chaptersspan 
+                                 2                                  2 
+                           charact                          character 
+                                 1                                  2 
+                  characterbrbrsur                  characterbrbrther 
+                                 2                                  2 
+                   characterdriven                         characterh 
+                                 2                                  2 
+                       characteris                       characterist 
+                                 2                                  2 
+                     characterkind                   charactersbrbrit 
+                                 2                                  2 
+                   charactersbrful                      charactersbri 
+                                 2                                  2 
+                  charactersbrmani                      charactersbrw 
+                                 2                                  2 
+                  charactersespeci                      characterspan 
+                                 2                                  2 
+                    charactersspan                    characterstspan 
+                                 2                                  2 
+                    charactertspan                              charg 
+                                 2                                  2 
+                         charismat                              charm 
+                                 2                                  2 
+                         charmspan                              chase 
+                                 2                                  2 
+                          chastain                             chater 
+                                 2                                  2 
+                             cheap                              cheat 
+                                 2                                  2 
+                             check                           checkabl 
+                                 2                                  2 
+                            cheeki                         cheekyspan 
+                                 2                                  2 
+                             cheer                             cheeri 
+                                 2                                  2 
+                      cheeringspan                          cheerlead 
+                                 2                                  2 
+                             chees                             cheesi 
+                                 2                                  2 
+                              chef                               chem 
+                                 2                                  2 
+                            chemic                            chemist 
+                                 2                                  2 
+                          chemisti                          chemistri 
+                                 2                                  2 
+                    chemistrybrbri                      chemistryspan 
+                                 2                                  2 
+                     chemiststspan                            cheshir 
+                                 2                                  2 
+                             chest                               chew 
+                                 2                                  2 
+                             chief                              child 
+                                 2                                  2 
+                          childlik                           children 
+                                 2                                  2 
+ [ reached getOption("max.print") -- omitted 16885 entries ]
+
+Available components:
+[1] "centers"     "size"        "cluster"     "membership"  "iter"        "withinerror"
+[7] "call"       
+> 
+> s3d <- scatterplot3d(result$membership, color = result$cluster, type = "h", angle = 55, scale.y = 0.7, pch = 16, main = "Pertinence")
+> plot(m, col=result$cluster)
+> 

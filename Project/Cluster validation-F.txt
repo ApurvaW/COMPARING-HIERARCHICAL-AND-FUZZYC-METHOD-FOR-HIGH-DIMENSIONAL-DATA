@@ -1,0 +1,128 @@
+> hc <- eclust(final, "hclust", k=2, graph = FALSE)
+> fviz_dend(hc,rect = TRUE, show_labels = TRUE)# Cut int 3 groups
+> hc.cut <- cutree(hc, k=3)
+> head(hc.cut, 20)
+ [1] 1 1 1 1 1 1 1 1 1 1 2 1 1 1 2 1 1 2 2 1
+> set.seed(123)
+> k.max =18 # max no. of cluster
+> data <- final.scaled
+> wss <- sapply(1:k.max, function(k){kmeans(data, k, nstart = 10 )$tot.withinss})
+> plot(1:k.max, wss, type="b", pch= 19, frame= FALSE, xlab= "Number of Clusters-k", ylab= "Total within-clusters sum of squares")
+> abline(v = 3, lty =2)
+> fviz_nbclust(intermediate.scaled, hcut, method = "wss") +
++   geom_vline(xintercept = 2, linetype =2)
+Error in inherits(x, c("data.frame", "matrix")) : 
+  object 'intermediate.scaled' not found
+> fviz_nbclust(final.scaled, hcut, method = "wss") +
++   geom_vline(xintercept = 2, linetype =2)
+> require(cluster)
+> fviz_nbclust(final.scaled, hcut, method = "silhouette", hc_method = "complete")
+> fviz_silhouette(hc)
+  cluster size ave.sil.width
+1       1   34          0.36
+2       2   18          0.42
+> sil <- hc$silinfo$widths[, 1:3]
+> neg_sil_index <- which(sil[, 'sil_width'] <0)
+> sil[neg_sil_index, ,drop= FALSE]
+[1] cluster   neighbor  sil_width
+<0 rows> (or 0-length row.names)
+> 
+> 
+> set.seed(123)
+> gap_stat <- clusGap(final.scaled, FUN= hcut, K.max = 10, B= 52)
+Clustering k = 1,2,..., K.max (= 10): .. done
+Bootstrapping, b = 1,2,..., B (= 52)  [one "." per sample]:
+.................................................. 50 
+.. 52 
+> fviz_gap_stat(gap_stat)
+> res.pv <- pvclust(final, method.dist = "cor", method.hclust = "complete", nboot = 10)
+Error in pvclust(final, method.dist = "cor", method.hclust = "complete",  : 
+  could not find function "pvclust"
+> library(pvclust)
+Warning message:
+package ‘pvclust’ was built under R version 3.4.1 
+> set.seed(123)
+> res.pv <- pvclust(final, method.dist = "cor", method.hclust = "complete", nboot = 10)
+Bootstrap (r = 0.5)... Done.
+Bootstrap (r = 0.6)... Done.
+Bootstrap (r = 0.69)... Done.
+Bootstrap (r = 0.79)... Done.
+Bootstrap (r = 0.88)... Done.
+Bootstrap (r = 1.0)... Done.
+Bootstrap (r = 1.1)... Done.
+Bootstrap (r = 1.19)... Done.
+Bootstrap (r = 1.29)... Done.
+Bootstrap (r = 1.38)... Done.
+Warning messages:
+1: inappropriate distance matrices are omitted in computation: r =  0.5 
+2: inappropriate distance matrices are omitted in computation: r =  0.692307692307692 
+3: inappropriate distance matrices are omitted in computation: r =  0.788461538461538 
+4: inappropriate distance matrices are omitted in computation: r =  0.884615384615385 
+5: inappropriate distance matrices are omitted in computation: r =  1 
+6: inappropriate distance matrices are omitted in computation: r =  1.28846153846154 
+> plot(res.pv, hang= -1, cex=0.5)
+> pvrect(res.pv)
+> library(e1071)
+Warning message:
+package ‘e1071’ was built under R version 3.4.1 
+> library(scatterplot3d)
+> result <- fanny(final,3)
+> fviz_nbclust(final.scaled, FUNcluster = cluster::fanny(final,3), method = "wss") +
++   geom_vline(xintercept = 2, linetype =2)
+Error in FUNcluster(x, i, ...) : could not find function "FUNcluster"
+> require(cluster)
+> fviz_nbclust(final.scaled, fanny, method = "silhouette")
+Warning messages:
+1: In FUNcluster(x, i, ...) :
+  the memberships are all very close to 1/k. Maybe decrease 'memb.exp' ?
+2: In FUNcluster(x, i, ...) :
+  the memberships are all very close to 1/k. Maybe decrease 'memb.exp' ?
+3: In FUNcluster(x, i, ...) :
+  the memberships are all very close to 1/k. Maybe decrease 'memb.exp' ?
+4: In FUNcluster(x, i, ...) :
+  the memberships are all very close to 1/k. Maybe decrease 'memb.exp' ?
+5: In FUNcluster(x, i, ...) :
+  the memberships are all very close to 1/k. Maybe decrease 'memb.exp' ?
+6: In FUNcluster(x, i, ...) :
+  the memberships are all very close to 1/k. Maybe decrease 'memb.exp' ?
+7: In FUNcluster(x, i, ...) :
+  the memberships are all very close to 1/k. Maybe decrease 'memb.exp' ?
+> fviz_silhouette(result)
+  cluster size ave.sil.width
+1       1   19          0.42
+2       2   16          0.37
+3       3   17          0.51
+> sil <- result$silinfo$widths[, 1:3]
+> neg_sil_index <- which(sil[, 'sil_width'] <0)
+> sil[neg_sil_index, ,drop= FALSE]
+   cluster neighbor   sil_width
+19       2        1 -0.09389061
+> library(clValid)
+Warning message:
+package ‘clValid’ was built under R version 3.4.1 
+> intern <- clValid(final.scaled, nClust = 2:18, clMethods = c("hierarchical", "fanny"), validation = "internal")
+There were 24 warnings (use warnings() to see them)
+> summary(intern)
+
+Clustering Methods:
+ hierarchical fanny 
+
+Cluster sizes:
+ 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+
+Validation Measures:
+                                 2       3       4       5       6       7       8       9      10      11      12      13      14      15      16      17      18
+                                                                                                                                                                  
+hierarchical Connectivity   2.9290  5.9579  8.8869 18.5992 21.4726 26.7849 29.7139 34.6036 40.2544 41.9155 53.1413 56.4992 57.1421 59.1944 59.6944 61.9040 64.9651
+             Dunn           0.8399  0.5861  0.5900  0.4203  0.4367  0.4712  0.4712  0.4770  0.4789  0.4789  0.4622  0.5099  0.5099  0.5099  0.5099  0.5099  0.5099
+             Silhouette     0.5401  0.3881  0.3566  0.3208  0.3023  0.2072  0.1647  0.1484  0.1523  0.1313  0.1703  0.1851  0.1760  0.1710  0.1641  0.1658  0.1703
+fanny        Connectivity  17.0627      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA
+             Dunn           0.2438      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA
+             Silhouette     0.2889      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA      NA
+
+Optimal Scores:
+
+             Score  Method       Clusters
+Connectivity 2.9290 hierarchical 2       
+Dunn         0.8399 hierarchical 2       
+Silhouette   0.5401 hierarchical 2       

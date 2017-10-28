@@ -1,0 +1,382 @@
+> pkgs <- c("cluster", "NbClust")
+> install.packages(pkgs)
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  unable to access index for repository https://cran.rstudio.com/src/contrib:
+  cannot open URL 'https://cran.rstudio.com/src/contrib/PACKAGES'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/src/contrib:
+  cannot open URL 'http://www.stats.ox.ac.uk/pub/RWin/src/contrib/PACKAGES'
+Installing packages into ‘C:/Users/Owner/Documents/R/win-library/3.4’
+(as ‘lib’ is unspecified)
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  unable to access index for repository https://cran.rstudio.com/src/contrib:
+  cannot open URL 'https://cran.rstudio.com/src/contrib/PACKAGES'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/src/contrib:
+  cannot open URL 'http://www.stats.ox.ac.uk/pub/RWin/src/contrib/PACKAGES'
+Warning in install.packages :
+  packages ‘cluster’, ‘NbClust’ are not available (for R version 3.4.0)
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  unable to access index for repository https://cran.rstudio.com/bin/windows/contrib/3.4:
+  cannot open URL 'https://cran.rstudio.com/bin/windows/contrib/3.4/PACKAGES'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  InternetOpenUrl failed: 'The server name or address could not be resolved'
+Warning in install.packages :
+  unable to access index for repository http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/3.4:
+  cannot open URL 'http://www.stats.ox.ac.uk/pub/RWin/bin/windows/contrib/3.4/PACKAGES'
+> library(factoextra)
+Loading required package: ggplot2
+> library(cluster)
+Warning message:
+package ‘cluster’ was built under R version 3.4.1 
+> library(NbClust)
+> library(colorspace)
+> library(dendextend)
+
+---------------------
+Welcome to dendextend version 1.5.2
+Type citation('dendextend') for how to cite the package.
+
+Type browseVignettes(package = 'dendextend') for the package vignette.
+The github page is: https://github.com/talgalili/dendextend/
+
+Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues
+Or contact: <tal.galili@gmail.com>
+
+	To suppress this message use:  suppressPackageStartupMessages(library(dendextend))
+---------------------
+
+
+Attaching package: ‘dendextend’
+
+The following object is masked from ‘package:stats’:
+
+    cutree
+
+> library(ggplot2)
+> library(readxl)
+Warning message:
+package ‘readxl’ was built under R version 3.4.1 
+> intermediate <- read_excel("~/Masters Projet/EPM/Data/intermediate_grades.xlsx")
+> intermediate.scaled <- scale(intermediate[, -1]) # Remove column (1) and scale the data
+> nb <- NbClust(intermediate.scaled, distance = "euclidean", min.nc = 2, max.nc = 10, method = "average", index = "all")
+*** : The Hubert index is a graphical method of determining the number of clusters.
+                In the plot of Hubert index, we seek a significant knee that corresponds to a 
+                significant increase of the value of the measure i.e the significant peak in Hubert
+                index second differences plot. 
+ 
+*** : The D index is a graphical method of determining the number of clusters. 
+                In the plot of D index, we seek a significant knee (the significant peak in Dindex
+                second differences plot) that corresponds to a significant increase of the value of
+                the measure. 
+ 
+******************************************************************* 
+* Among all indices:                                                
+* 8 proposed 2 as the best number of clusters 
+* 4 proposed 3 as the best number of clusters 
+* 1 proposed 4 as the best number of clusters 
+* 5 proposed 5 as the best number of clusters 
+* 2 proposed 7 as the best number of clusters 
+* 1 proposed 8 as the best number of clusters 
+* 2 proposed 10 as the best number of clusters 
+
+                   ***** Conclusion *****                            
+ 
+* According to the majority rule, the best number of clusters is  2 
+ 
+ 
+******************************************************************* 
+> nb
+$All.index
+          KL      CH Hartigan     CCC    Scott    Marriot    TrCovW   TraceW Friedman
+2  1380.5114 78.9209  19.9246 -2.3512 231.9688 1212079324 3326.6387 335.6070   7.7220
+3     0.0075 55.8816  10.2830 -3.9241 493.5776  280384939 2828.5623 285.3016  27.0818
+4     0.0999 43.7087  55.0109 -5.5360 650.5248  127328440 2774.9355 261.3101  44.3913
+5     8.6925 62.2150   3.5176  1.0652 761.8218   75584941 1382.6875 174.7200  47.9179
+6     1.3574 51.5938  10.5074 -0.4166 773.7451   98122749 1289.2230 169.3059  48.9155
+7     0.3335 48.4421  17.5331 -0.1170 819.2610   89902866 1125.8504 154.4201  50.9713
+8     7.6763 50.2973   3.6925  1.7549 865.3626   78642261  821.2069 132.8524  52.5161
+9     0.7573 45.5606   2.6829  0.9569 880.7444   87070717  764.1713 128.4207  53.0941
+10    4.1288 41.4269   3.6330  0.1047 891.8333   97613540  717.6337 125.2505  54.2228
+    Rubin Cindex     DB Silhouette   Duda Pseudot2   Beale Ratkowsky     Ball Ptbiserial
+2  1.6984 0.3914 1.0655     0.4622 0.5476  19.0008  2.4779    0.4369 167.8035     0.7195
+3  1.9979 0.3813 1.0559     0.4356 0.3230  25.1481  6.0545    0.3877  95.1005     0.7335
+4  2.1813 0.3792 0.9008     0.4531 0.6141  55.2897  1.9443    0.3511  65.3275     0.7342
+5  3.2624 0.3753 0.9396     0.4208 1.4086  -0.5802 -0.6053    0.3673  34.9440     0.7182
+6  3.3667 0.3750 0.8164     0.4287 0.4152  12.6772  3.9677    0.3382  28.2177     0.7183
+7  3.6912 0.3722 0.7523     0.4368 0.8029  16.6905  0.7571    0.3193  22.0600     0.7190
+8  4.2905 0.4189 0.8122     0.4240 1.3238  -1.2231 -0.6380    0.3077  16.6066     0.7203
+9  4.4385 0.4183 0.7429     0.4309 1.5382  -0.6998 -0.7300    0.2917  14.2690     0.7200
+10 4.5509 0.4180 0.6903     0.4355 1.6004  -3.0012 -1.0437    0.2779  12.5251     0.7198
+     Frey McClain   Dunn Hubert SDindex Dindex   SDbw
+2  0.8264  0.2571 0.3326 0.0039  1.2550 1.5811 0.8208
+3  1.4870  0.2805 0.3326 0.0041  1.1604 1.4491 0.6190
+4  1.2071  0.2875 0.3326 0.0041  1.0380 1.3611 0.4931
+5  0.5540  0.6199 0.2228 0.0040  1.1577 1.1209 0.4734
+6  0.5498  0.6207 0.2228 0.0040  0.9882 1.0955 0.2868
+7  0.6021  0.6281 0.2228 0.0040  0.9315 1.0366 0.2514
+8  0.8243  0.7240 0.2325 0.0040  1.0396 0.9771 0.2683
+9  1.1338  0.7262 0.2325 0.0040  0.9702 0.9528 0.2160
+10 1.1291  0.7274 0.2325 0.0040  0.9741 0.9353 0.1806
+
+$All.CriticalValues
+   CritValue_Duda CritValue_PseudoT2 Fvalue_Beale
+2          0.5022            22.8018       0.0359
+3          0.3776            19.7832       0.0001
+4          0.6774            41.9087       0.0858
+5         -0.0536           -39.3104       1.0000
+6          0.3141            19.6526       0.0046
+7          0.6513            36.4142       0.5814
+8          0.1725            23.9899       1.0000
+9         -0.0536           -39.3104       1.0000
+10         0.2868            19.8896       1.0000
+
+$Best.nc
+                      KL      CH Hartigan    CCC    Scott   Marriot   TrCovW TraceW
+Number_clusters    2.000  2.0000   5.0000 8.0000   3.0000         3    5.000  5.000
+Value_Index     1380.511 78.9209  51.4933 1.7549 261.6088 778637886 1392.248 81.176
+                Friedman   Rubin Cindex      DB Silhouette   Duda PseudoT2   Beale
+Number_clusters   3.0000  5.0000 7.0000 10.0000     2.0000 2.0000   2.0000  5.0000
+Value_Index      19.3598 -0.9767 0.3722  0.6903     0.4622 0.5476  19.0008 -0.6053
+                Ratkowsky   Ball PtBiserial Frey McClain   Dunn Hubert SDindex Dindex
+Number_clusters    2.0000  3.000     4.0000    1  2.0000 2.0000      0  7.0000      0
+Value_Index        0.4369 72.703     0.7342   NA  0.2571 0.3326      0  0.9315      0
+                   SDbw
+Number_clusters 10.0000
+Value_Index      0.1806
+
+$Best.partition
+  [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 1 1 1 1 2 1 1 1 1 1 1 2 1 1 1 1 1 1 1 1 1
+ [43] 2 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 1 1 1 2 1 1 1 1 1 1 1 1 1 1 2 1 1 1 2 1 1 1 1 1 1 2
+ [85] 1 1 1 1 1 1 1 1 1 1 1 1 2 1 1 2 2 1 2 1 2 2 2 2 2 2 2 2 2 2 2
+
+> fviz_nbclust(nb) + theme_minimal()
+Among all indices: 
+===================
+* 2 proposed  0 as the best number of clusters
+* 1 proposed  1 as the best number of clusters
+* 8 proposed  2 as the best number of clusters
+* 4 proposed  3 as the best number of clusters
+* 1 proposed  4 as the best number of clusters
+* 5 proposed  5 as the best number of clusters
+* 2 proposed  7 as the best number of clusters
+* 1 proposed  8 as the best number of clusters
+* 2 proposed  10 as the best number of clusters
+
+Conclusion
+=========================
+* According to the majority rule, the best number of clusters is  2 .
+
+> dist.res <- dist(intermediate.scaled, method = "euclidean")
+> hc <- eclust(intermediate, "hclust", k=2, graph = FALSE)
+> fviz_dend(hc,rect = TRUE, show_labels = TRUE)# Cut int 3 groups
+> hc.cut <- cutree(hc, k=3)
+> head(hc.cut, 20)
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+> set.seed(123)
+> k.max =15 # max no. of cluster
+> data <- intermediate.scaled
+> wss <- sapply(1:k.max, function(k){kmeans(data, k, nstart = 10 )$tot.withinss})
+> plot(1:k.max, wss, type="b", pch= 19, frame= FALSE, xlab= "Number of Clusters-k", ylab= "Total within-clusters sum of squares")
+> abline(v = 3, lty =2)
+> fviz_nbclust(intermediate.scaled, hcut, method = "wss") +
++   geom_vline(xintercept = 2, linetype =2)
+> require(cluster)
+> fviz_nbclust(intermediate.scaled, hcut, method = "silhouette", hc_method = "complete")
+> fviz_silhouette(hc)
+  cluster size ave.sil.width
+1       1   56          0.62
+2       2   59          0.59
+> sil <- hc$silinfo$widths[, 1:3]
+> neg_sil_index <- which(sil[, 'sil_width'] <0)
+> sil[neg_sil_index, ,drop= FALSE]
+   cluster neighbor   sil_width
+57       2        1 -0.02774825
+> set.seed(123)
+> gap_stat <- clusGap(intermediate.scaled, FUN= hcut, K.max = 10, B= 115)
+Clustering k = 1,2,..., K.max (= 10): .. done
+Bootstrapping, b = 1,2,..., B (= 115)  [one "." per sample]:
+.................................................. 50 
+.................................................. 100 
+............... 115 
+> fviz_gap_stat(gap_stat)
+> library(pvclust)
+Warning message:
+package ‘pvclust’ was built under R version 3.4.1 
+> set.seed(123)
+> res.pv <- pvclust(intermediate, method.dist = "cor", method.hclust = "average", nboot = 10)
+Bootstrap (r = 0.5)... Done.
+Bootstrap (r = 0.6)... Done.
+Bootstrap (r = 0.7)... Done.
+Bootstrap (r = 0.8)... Done.
+Bootstrap (r = 0.9)... Done.
+Bootstrap (r = 1.0)... Done.
+Bootstrap (r = 1.1)... Done.
+Bootstrap (r = 1.2)... Done.
+Bootstrap (r = 1.3)... Done.
+Bootstrap (r = 1.4)... Done.
+> plot(res.pv, hang= -1, cex=0.5)
+> set.seed(123)
+> gap_stat <- clusGap(intermediate.scaled, FUN= hcut, K.max = 10, B= 115)
+Clustering k = 1,2,..., K.max (= 10): .. done
+Bootstrapping, b = 1,2,..., B (= 115)  [one "." per sample]:
+.................................................. 50 
+.................................................. 100 
+............... 115 
+> fviz_gap_stat(gap_stat)
+> library(pvclust)
+> set.seed(123)
+> res.pv <- pvclust(intermediate, method.dist = "cor", method.hclust = "average", nboot = 10)
+Bootstrap (r = 0.5)... Done.
+Bootstrap (r = 0.6)... Done.
+Bootstrap (r = 0.7)... Done.
+Bootstrap (r = 0.8)... Done.
+Bootstrap (r = 0.9)... Done.
+Bootstrap (r = 1.0)... Done.
+Bootstrap (r = 1.1)... Done.
+Bootstrap (r = 1.2)... Done.
+Bootstrap (r = 1.3)... Done.
+Bootstrap (r = 1.4)... Done.
+> library(e1071)
+Warning message:
+package ‘e1071’ was built under R version 3.4.1 
+> library(scatterplot3d)
+> result <- fanny(intermediate,3)
+> fviz_nbclust(intermediate.scaled, FUNcluster = cluster::fanny(intermediate,3), method = "wss") +
++   geom_vline(xintercept = 2, linetype =2)
+Error in FUNcluster(x, i, ...) : could not find function "FUNcluster"
+> require(cluster)
+> fviz_nbclust(intermediate.scaled, fanny, method = "silhouette")
+Warning message:
+In FUNcluster(x, i, ...) :
+  FANNY algorithm has not converged in 'maxit' = 500 iterations
+> fviz_silhouette(result)
+  cluster size ave.sil.width
+1       1   37          0.61
+2       2   40          0.46
+3       3   38          0.60
+> sil <- result$silinfo$widths[, 1:3]
+> neg_sil_index <- which(sil[, 'sil_width'] <0)
+> sil[neg_sil_index, ,drop= FALSE]
+   cluster neighbor   sil_width
+77       2        3 -0.01245207
+38       2        1 -0.04575798
+> library(clValid)
+Warning message:
+package ‘clValid’ was built under R version 3.4.1 
+> intern <- clValid(intermediate.scaled, nClust = 2:6, clMethods = c("hierarchical", "fanny"), validation = "internal")
+Warning messages:
+1: In vClusters(mat, clMethods[i], nClust, validation = validation,  :
+  fanny unable to find 5 clusters, returning NA for these validation measures
+2: In vClusters(mat, clMethods[i], nClust, validation = validation,  :
+  fanny unable to find 6 clusters, returning NA for these validation measures
+3: In clValid(intermediate.scaled, nClust = 2:6, clMethods = c("hierarchical",  :
+  rownames for data not specified, using 1:nrow(data)
+> summary(intern)
+
+Clustering Methods:
+ hierarchical fanny 
+
+Cluster sizes:
+ 2 3 4 5 6 
+
+Validation Measures:
+                                 2       3       4       5       6
+                                                                  
+hierarchical Connectivity  10.3881 10.3881 13.4794 20.5187 22.3020
+             Dunn           0.3326  0.3326  0.3326  0.2228  0.2228
+             Silhouette     0.4622  0.4356  0.4531  0.4208  0.4200
+fanny        Connectivity  23.0575 44.2163 54.4067      NA      NA
+             Dunn           0.0600  0.0632  0.0632      NA      NA
+             Silhouette     0.3899  0.3041  0.2660      NA      NA
+
+Optimal Scores:
+
+             Score   Method       Clusters
+Connectivity 10.3881 hierarchical 2       
+Dunn          0.3326 hierarchical 2       
+Silhouette    0.4622 hierarchical 2       
+
+> plot(res.pv, hang= -1, cex=0.5)
+> fviz_nbclust(intermediate.scaled, fanny, method = "silhouette")
+Warning message:
+In FUNcluster(x, i, ...) :
+  FANNY algorithm has not converged in 'maxit' = 500 iterations
+> fviz_silhouette(result)
+  cluster size ave.sil.width
+1       1   37          0.61
+2       2   40          0.46
+3       3   38          0.60
+> sil <- result$silinfo$widths[, 1:3]
+> neg_sil_index <- which(sil[, 'sil_width'] <0)
+> sil[neg_sil_index, ,drop= FALSE]
+   cluster neighbor   sil_width
+77       2        3 -0.01245207
+38       2        1 -0.04575798
+> library(clValid)
+> intern <- clValid(intermediate.scaled, nClust = 2:6, clMethods = c("hierarchical", "fanny"), validation = "internal")
+Warning messages:
+1: In vClusters(mat, clMethods[i], nClust, validation = validation,  :
+  fanny unable to find 5 clusters, returning NA for these validation measures
+2: In vClusters(mat, clMethods[i], nClust, validation = validation,  :
+  fanny unable to find 6 clusters, returning NA for these validation measures
+3: In clValid(intermediate.scaled, nClust = 2:6, clMethods = c("hierarchical",  :
+  rownames for data not specified, using 1:nrow(data)
+> summary(intern)
+
+Clustering Methods:
+ hierarchical fanny 
+
+Cluster sizes:
+ 2 3 4 5 6 
+
+Validation Measures:
+                                 2       3       4       5       6
+                                                                  
+hierarchical Connectivity  10.3881 10.3881 13.4794 20.5187 22.3020
+             Dunn           0.3326  0.3326  0.3326  0.2228  0.2228
+             Silhouette     0.4622  0.4356  0.4531  0.4208  0.4200
+fanny        Connectivity  23.0575 44.2163 54.4067      NA      NA
+             Dunn           0.0600  0.0632  0.0632      NA      NA
+             Silhouette     0.3899  0.3041  0.2660      NA      NA
+
+Optimal Scores:
+
+             Score   Method       Clusters
+Connectivity 10.3881 hierarchical 2       
+Dunn          0.3326 hierarchical 2       
+Silhouette    0.4622 hierarchical 2       

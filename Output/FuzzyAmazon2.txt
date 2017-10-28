@@ -1,0 +1,1941 @@
+> # Fuzzy Clustering 
+> library(e1071)
+> library(tm) #Text Mining Package
+> library(scatterplot3d)
+> library(readr)
+> Donna_Tartt_The_Goldfinch <- read_csv("~/Masters Projet/Amazon-book reviews/Donna-Tartt-The-Goldfinch.csv", 
++                                       col_names = FALSE)
+Parsed with column specification:
+cols(
+  X1 = col_character(),
+  X2 = col_character(),
+  X3 = col_character(),
+  X4 = col_character(),
+  X5 = col_character(),
+  X6 = col_character(),
+  X7 = col_character(),
+  X8 = col_character(),
+  X9 = col_character(),
+  X10 = col_character(),
+  X11 = col_character(),
+  X12 = col_character(),
+  X13 = col_character(),
+  X14 = col_character(),
+  X15 = col_character(),
+  X16 = col_character()
+)
+Warning: 22914 parsing failures.
+row # A tibble: 5 x 5 col     row   col           expected     actual expected   <int> <chr>              <chr>      <chr> actual 1     2  <NA> delimiter or quote            file 2     2  <NA>         16 columns 17 columns row 3     3  <NA>         16 columns 55 columns col 4     4  <NA>         16 columns 23 columns expected 5     5  <NA>         16 columns 20 columns actual # ... with 1 more variables: file <chr>
+... ................. ... ........................................... ........ ........................................... ...... ........................................... .... ........................................... ... ........................................... ... ........................................... ........ ........................................... ...... .......................................
+See problems(...) for more details.
+
+Warning message:
+In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+> ## Amazon Review Dataset File 1
+> length(Donna_Tartt_The_Goldfinch)
+[1] 16
+> head(Donna_Tartt_The_Goldfinch)
+# A tibble: 6 x 16
+                                                                                         X1
+                                                                                      <chr>
+1 "5.0\t/gp/customer-reviews/R20Q73A83CLX8E?ASIN=0316055441\tSeveral GREAT novellas in one 
+2 "3.0\t/gp/customer-reviews/R321LNYJ59OO8D?ASIN=0316055441\tSome great scenes and lines th
+3            "3.0\t/gp/customer-reviews/R29JOZB1YV2ZSR?ASIN=0316055441\tA stunning success"
+4 "3.0\t/gp/customer-reviews/R1NF13Z6QPD4LC?ASIN=0316055441\tI. Don't. Get. It.\t\"<span cl
+5                   "5.0\t/gp/customer-reviews/R2DRX7C8ZNOXP1?ASIN=0316055441\tSuperficial"
+6 "2.0\t/gp/customer-reviews/R3BZ3TKOS1RGS8?ASIN=0316055441\tA for effort\t\"<span class=\"
+# ... with 15 more variables: X2 <chr>, X3 <chr>, X4 <chr>, X5 <chr>, X6 <chr>,
+#   X7 <chr>, X8 <chr>, X9 <chr>, X10 <chr>, X11 <chr>, X12 <chr>, X13 <chr>, X14 <chr>,
+#   X15 <chr>, X16 <chr>
+> tail(Donna_Tartt_The_Goldfinch)
+# A tibble: 6 x 16
+                                                                                         X1
+                                                                                      <chr>
+1 "1.0\t/gp/customer-reviews/R3QUCAG47YQZ0?ASIN=0316055441\tbad book\t\"<span class=\"\"a-s
+2 "2.0\t/gp/customer-reviews/RU15M5PYF0DI7?ASIN=0316055441\tGreat Writer but Wordy\t\"<span
+3      "1.0\t/gp/customer-reviews/R3GQ78LTYI3WG6?ASIN=0316055441\t120 comments out of 7000"
+4 "3.0\t/gp/customer-reviews/R2YG26PTSJYN9T?ASIN=0316055441\tmuch too long\t\"<span class=\
+5           "1.0\t/gp/customer-reviews/R3530SYX16BICT?ASIN=0316055441\tIt was a great idea"
+6 "1.0\t/gp/customer-reviews/R193YJ6BDUV4BW?ASIN=0316055441\tpardon my truncated review\t\"
+# ... with 15 more variables: X2 <chr>, X3 <chr>, X4 <chr>, X5 <chr>, X6 <chr>,
+#   X7 <chr>, X8 <chr>, X9 <chr>, X10 <chr>, X11 <chr>, X12 <chr>, X13 <chr>, X14 <chr>,
+#   X15 <chr>, X16 <chr>
+> summary(Donna_Tartt_The_Goldfinch)
+      X1                 X2                 X3                 X4           
+ Length:22861       Length:22861       Length:22861       Length:22861      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+      X5                 X6                 X7                 X8           
+ Length:22861       Length:22861       Length:22861       Length:22861      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+      X9                X10                X11                X12           
+ Length:22861       Length:22861       Length:22861       Length:22861      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+     X13                X14                X15                X16           
+ Length:22861       Length:22861       Length:22861       Length:22861      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+> Donna = Donna_Tartt_The_Goldfinch[-(1)]
+> length(Donna)
+[1] 15
+> 
+> doc.vec <- VectorSource(Donna) # Construct a Source of Vector as input
+> doc.corpus <- Corpus(doc.vec) # Corpus- Function for Natural Language document
+> summary(doc.corpus)
+   Length Class             Mode
+1  2      PlainTextDocument list
+2  2      PlainTextDocument list
+3  2      PlainTextDocument list
+4  2      PlainTextDocument list
+5  2      PlainTextDocument list
+6  2      PlainTextDocument list
+7  2      PlainTextDocument list
+8  2      PlainTextDocument list
+9  2      PlainTextDocument list
+10 2      PlainTextDocument list
+11 2      PlainTextDocument list
+12 2      PlainTextDocument list
+13 2      PlainTextDocument list
+14 2      PlainTextDocument list
+15 2      PlainTextDocument list
+> 
+> #tm_map: function for transformation of document
+> doc.corpus <- tm_map(doc.corpus, content_transformer(tolower))
+> doc.corpus <- tm_map(doc.corpus,removePunctuation)
+> doc.corpus <- tm_map(doc.corpus, removeNumbers)
+> doc.corpus <- tm_map(doc.corpus, removeWords, stopwords("english"))
+> 
+> library(SnowballC) #Comparison of Vocabulary
+> doc.corpus <- tm_map(doc.corpus, stemDocument)
+> doc.corpus <- tm_map(doc.corpus, stripWhitespace)
+> inspect(doc.corpus[12]) # paragraph from doc. corpus of column no. given 
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] cbut im give good solid sinc dont think quit come theo charact felt inconsist sustain whole novelbrbrth high point novel theo life immedi explos kill mother constant evok earlier book rather real life open section art aficionado patron preach manner disgustingbr oh matter unlik realli na yearold protagonist na page singl space fair small type final gave na made understand na na na despair sake na na although suppos believ obsess paint return nyc na na na na na na na na art ironi fate na na got old advanc narrat book still well worth read save two mayb three na na na na na na na na art theftth author includ someth everyon much anyon quit read reader na tartt mani na na na na last third na avoid wont miss anythingspan na na na start skim realiz noth ever happen theo grow just like father whateverbrbrtheo na reader reallyparticular las vega recess amsterdam decemb na na na anachron everi time crisi need resolv lose friend na na na na na na na read truli good modern fictionspan hope ex... <truncated>
+> inspect(doc.corpus[8])
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] cthe charact plot realli move along terrificbrbrand apathet life general theodor dekker end one realli want tupac shakur cours high school page mean realli care descript drug induc ecstasy— total loser like bori drag hero rail saniti na latest donna tartt weigh near top class wait ten year write book length na thing just written death found say oh god sake get numb brain ala na let see na na na polit context help defin way charact behav na na find friendship protect affluent na na na want confirm book ponder philosoph rambl neither insight thoughtprovok charact na na good editor work na final work huge imagin incred creativ na na suffer inabl clear understand see time gambl alcohol amp depend na googl household word author put togeth even rudimentari accur timelin need get anoth line workspan na na na na na dysfunct relationship na true tragic form theo demon prove much harm even gentlest folk love deeplybrbrwhil part narrat magic equal done without rather odd turn novel take way s... <truncated>
+> TDM <- TermDocumentMatrix(doc.corpus) # row: terms(words) column: document(webpages)
+> TDM
+<<TermDocumentMatrix (terms: 20008, documents: 15)>>
+Non-/sparse entries: 56161/243959
+Sparsity           : 81%
+Maximal term length: 95
+Weighting          : term frequency (tf)
+> inspect(TDM[1:15,1:15])
+<<TermDocumentMatrix (terms: 15, documents: 15)>>
+Non-/sparse entries: 71/154
+Sparsity           : 68%
+Maximal term length: 16
+Weighting          : term frequency (tf)
+Sample             :
+              Docs
+Terms           1 12  2  3  4  5 6 7 8 9
+  abandon      12  4 19 15  4  4 8 5 2 0
+  abandonedand  1  0  0  0  0  0 0 0 0 0
+  abhorr        1  0  0  0  0  0 1 0 0 0
+  abil         43  5 27 10 15  7 2 5 3 3
+  abilityspan   1  0  0  0  1  0 0 0 0 0
+  abject        1  0  0  0  1  0 0 0 1 0
+  abl          43  3 27 23 16 23 9 8 4 4
+  abnorm        1  0  1  0  0  0 0 0 0 0
+  abound        3  0  3  0  0  1 1 2 1 1
+  aboutbrth     1  0  0  1  0  1 0 0 0 0
+> DTM <- DocumentTermMatrix(doc.corpus) # row: document(webpages) column: terms(words)
+> DTM
+<<DocumentTermMatrix (documents: 15, terms: 20008)>>
+Non-/sparse entries: 56161/243959
+Sparsity           : 81%
+Maximal term length: 95
+Weighting          : term frequency (tf)
+> inspect(DTM[1:15,1:15])
+<<DocumentTermMatrix (documents: 15, terms: 15)>>
+Non-/sparse entries: 71/154
+Sparsity           : 68%
+Maximal term length: 16
+Weighting          : term frequency (tf)
+Sample             :
+    Terms
+Docs abandon abandonedand abhorr abil abilityspan abject abl abnorm abound aboutbrth
+  1       12            1      1   43           1      1  43      1      3         1
+  12       4            0      0    5           0      0   3      0      0         0
+  2       19            0      0   27           0      0  27      1      3         0
+  3       15            0      0   10           0      0  23      0      0         1
+  4        4            0      0   15           1      1  16      0      0         0
+  5        4            0      0    7           0      0  23      0      1         1
+  6        8            0      1    2           0      0   9      0      1         0
+  7        5            0      0    5           0      0   8      0      2         0
+  8        2            0      0    3           0      1   4      0      1         0
+  9        0            0      0    3           0      0   4      0      1         0
+> findFreqTerms(TDM,700)  #each of this words occurred more than 1000 times
+ [1] "also"          "art"           "author"        "beauti"        "bit"          
+ [6] "book"          "bori"          "can"           "charact"       "classasizebas"
+[11] "descript"      "detail"        "didnt"         "donna"         "dont"         
+[16] "drug"          "end"           "enjoy"         "even"          "feel"         
+[21] "felt"          "find"          "finish"        "first"         "found"        
+[26] "get"           "goldfinch"     "good"          "great"         "happen"       
+[31] "interest"      "itspan"        "just"          "know"          "last"         
+[36] "life"          "like"          "littl"         "live"          "long"         
+[41] "love"          "main"          "make"          "mani"          "mother"       
+[46] "much"          "never"         "novel"         "one"           "page"         
+[51] "paint"         "part"          "peopl"         "plot"          "put"          
+[56] "read"          "reader"        "realli"        "recommend"     "say"          
+[61] "see"           "seem"          "stori"         "take"          "tartt"        
+[66] "theo"          "thing"         "think"         "thought"       "time"         
+[71] "want"          "way"           "well"          "will"          "wonder"       
+[76] "worth"         "write"         "written"      
+> findAssocs(TDM, "like", 0.8) #range between 0-1
+$like
+           author             becam              best              book 
+             1.00              1.00              1.00              1.00 
+              boy           charact           definit             didnt 
+             1.00              1.00              1.00              1.00 
+             dont               end             entir           exhaust 
+             1.00              1.00              1.00              1.00 
+           expect              felt               get               ive 
+             1.00              1.00              1.00              1.00 
+             just              last              lost              love 
+             1.00              1.00              1.00              1.00 
+             main              mani              much             never 
+             1.00              1.00              1.00              1.00 
+            novel               one             place              plot 
+             1.00              1.00              1.00              1.00 
+           pulitz            realli         recommend              star 
+             1.00              1.00              1.00              1.00 
+             sure             tartt             think               way 
+             1.00              1.00              1.00              1.00 
+           wonder             worth            actual            addict 
+             1.00              1.00              0.99              0.99 
+              age            almost             along              also 
+             0.99              0.99              0.99              0.99 
+            anyon              area             basic            beauti 
+             0.99              0.99              0.99              0.99 
+            begin            better               bit              blah 
+             0.99              0.99              0.99              0.99 
+         bookspan              bore              cant            captur 
+             0.99              0.99              0.99              0.99 
+             care           certain           chapter          circumst 
+             0.99              0.99              0.99              0.99 
+             club              come           complet           complex 
+             0.99              0.99              0.99              0.99 
+          conclus           couldnt             coupl            critic 
+             0.99              0.99              0.99              0.99 
+             dark              deal           depress           describ 
+             0.99              0.99              0.99              0.99 
+         descript            deserv            detail           develop 
+             0.99              0.99              0.99              0.99 
+           differ         difficult        disappoint              done 
+             0.99              0.99              0.99              0.99 
+            donna          downspan             drawn              drug 
+             0.99              0.99              0.99              0.99 
+            earli              easi              edit            editor 
+             0.99              0.99              0.99              0.99 
+          endspan             engag             enjoy            enough 
+             0.99              0.99              0.99              0.99 
+           especi              even              ever             everi 
+             0.99              0.99              0.99              0.99 
+            excel            excess            experi               far 
+             0.99              0.99              0.99              0.99 
+             fill             final              find            finish 
+             0.99              0.99              0.99              0.99 
+            first            follow              forc             found 
+             0.99              0.99              0.99              0.99 
+           friend              full             fulli              gave 
+             0.99              0.99              0.99              0.99 
+             give              glad               goe         goldfinch 
+             0.99              0.99              0.99              0.99 
+             good               got             great             guess 
+             0.99              0.99              0.99              0.99 
+          halfway            happen             happi              hard 
+             0.99              0.99              0.99              0.99 
+       heartbreak              high           histori              hope 
+             0.99              0.99              0.99              0.99 
+             hour             howev           insight          interest 
+             0.99              0.99              0.99              0.99 
+          intrigu            itspan           journey              keep 
+             0.99              0.99              0.99              0.99 
+             kept             kindl        kindlespan              knew 
+             0.99              0.99              0.99              0.99 
+             know              left            length              life 
+             0.99              0.99              0.99              0.99 
+             line          literari             littl              live 
+             0.99              0.99              0.99              0.99 
+             long              look              lose              loss 
+             0.99              0.99              0.99              0.99 
+              lot              make             middl              mind 
+             0.99              0.99              0.99              0.99 
+             miss            moment              must           mysteri 
+             0.99              0.99              0.99              0.99 
+             near               new              next               now 
+             0.99              0.99              0.99              0.99 
+            often             other            overal              pace 
+             0.99              0.99              0.99              0.99 
+             page             paint              part            person 
+             0.99              0.99              0.99              0.99 
+           phrase              pick              poor            prefer 
+             0.99              0.99              0.99              0.99 
+           pretti             prize              pull               put 
+             0.99              0.99              0.99              0.99 
+            quick              quit             rambl              read 
+             0.99              0.99              0.99              0.99 
+           reader             readi       readingspan          readspan 
+             0.99              0.99              0.99              0.99 
+             real     recommendspan           repetit            reread 
+             0.99              0.99              0.99              0.99 
+           review              ride             right               sad 
+             0.99              0.99              0.99              0.99 
+              say            second            secret               see 
+             0.99              0.99              0.99              0.99 
+             seem            seller               set              skip 
+             0.99              0.99              0.99              0.99 
+           someth           sometim          somewhat              span 
+             0.99              0.99              0.99              0.99 
+            spent             start              stay             still 
+             0.99              0.99              0.99              0.99 
+            stori         storyspan             style            superb 
+             0.99              0.99              0.99              0.99 
+             take              tale           terribl            terrif 
+             0.99              0.99              0.99              0.99 
+            thing          thorough            though           thought 
+             0.99              0.99              0.99              0.99 
+            three          thriller              time          timespan 
+             0.99              0.99              0.99              0.99 
+             told              took            tortur             total 
+             0.99              0.99              0.99              0.99 
+            touch            toward               tri              turn 
+             0.99              0.99              0.99              0.99 
+            twist               two        understand        uninterest 
+             0.99              0.99              0.99              0.99 
+              use              wait              want              well 
+             0.99              0.99              0.99              0.99 
+             went              will               won              wont 
+             0.99              0.99              0.99              0.99 
+             word           wouldnt             write            writer 
+             0.99              0.99              0.99              0.99 
+             year               yet             young           accolad 
+             0.99              0.99              0.99              0.98 
+       accomplish          adventur            afraid          although 
+             0.98              0.98              0.98              0.98 
+             amaz            amount             anoth             anyth 
+             0.98              0.98              0.98              0.98 
+          appreci            around               art            attent 
+             0.98              0.98              0.98              0.98 
+             back               bad              base             beach 
+             0.98              0.98              0.98              0.98 
+            becom            believ             bleak             blind 
+             0.98              0.98              0.98              0.98 
+              bog         booksspan         brilliant             bring 
+             0.98              0.98              0.98              0.98 
+              buy               can             carri             chang 
+             0.98              0.98              0.98              0.98 
+            child             choic             clear            compel 
+             0.98              0.98              0.98              0.98 
+        cumbersom            darker               day              deep 
+             0.98              0.98              0.98              0.98 
+           deepli             delet             depth        difficulti 
+             0.98              0.98              0.98              0.98 
+          disgust           disturb             doubt              drag 
+             0.98              0.98              0.98              0.98 
+            drunk           element              emot           english 
+             0.98              0.98              0.98              0.98 
+          engross         entertain           enthral              epic 
+             0.98              0.98              0.98              0.98 
+           except            explos            fascin           favorit 
+             0.98              0.98              0.98              0.98 
+             feel              fell             fetch              fine 
+             0.98              0.98              0.98              0.98 
+             flow             forev           forward              grip 
+             0.98              0.98              0.98              0.98 
+             half              hate             heart              held 
+             0.98              0.98              0.98              0.98 
+             hold              hook              idea            imagin 
+             0.98              0.98              0.98              0.98 
+           import            improb            incred            inform 
+             0.98              0.98              0.98              0.98 
+           intens        introspect            involv               job 
+             0.98              0.98              0.98              0.98 
+      journeyspan               joy              kind           languag 
+             0.98              0.98              0.98              0.98 
+              las             learn           lengthi               let 
+             0.98              0.98              0.98              0.98 
+           listen         literatur            longer          longspan 
+             0.98              0.98              0.98              0.98 
+            lyric              made            matter            mespan 
+             0.98              0.98              0.98              0.98 
+           messag            modern             month              most 
+             0.98              0.98              0.98              0.98 
+             move              movi              name              need 
+             0.98              0.98              0.98              0.98 
+             nice               old           onespan           opinion 
+             0.98              0.98              0.98              0.98 
+         overspan               pad          pageturn              paid 
+             0.98              0.98              0.98              0.98 
+             pain         paragraph            passag              past 
+             0.98              0.98              0.98              0.98 
+          perfect            period         philosoph              piec 
+             0.98              0.98              0.98              0.98 
+         plotspan             point            potter            premis 
+             0.98              0.98              0.98              0.98 
+          probabl             prose            provok           qualiti 
+             0.98              0.98              0.98              0.98 
+            rapid              rate            rather            realiz 
+             0.98              0.98              0.98              0.98 
+           redeem      relationship              rich               run 
+             0.98              0.98              0.98              0.98 
+            savor             scene              self            simpli 
+             0.98              0.98              0.98              0.98 
+           situat              skim           somehow            someon 
+             0.98              0.98              0.98              0.98 
+            sorri           special              stop          storylin 
+             0.98              0.98              0.98              0.98 
+           strong             studi           subject          substanc 
+             0.98              0.98              0.98              0.98 
+           summer           surpris           suspens              tast 
+             0.98              0.98              0.98              0.98 
+             tell             theme             third               tie 
+             0.98              0.98              0.98              0.98 
+             titl            togeth               top              true 
+             0.98              0.98              0.98              0.98 
+            truli          unexpect          unfortun             uniqu 
+             0.98              0.98              0.98              0.98 
+            unlik             unusu            urgenc           usespan 
+             0.98              0.98              0.98              0.98 
+            usual              vari            verbos           version 
+             0.98              0.98              0.98              0.98 
+             wast              week             whole              wild 
+             0.98              0.98              0.98              0.98 
+          without         worldspan         worthwhil             woven 
+             0.98              0.98              0.98              0.98 
+             wrap           written             wrong               yes 
+             0.98              0.98              0.98              0.98 
+            youll              abil           absolut            absorb 
+             0.98              0.97              0.97              0.97 
+              add           adolesc            affect              agre 
+             0.97              0.97              0.97              0.97 
+          alcohol              aliv           allspan             alway 
+             0.97              0.97              0.97              0.97 
+           amazon           artspan             baffl           benefit 
+             0.97              0.97              0.97              0.97 
+       betterspan            beyond              bite              bori 
+             0.97              0.97              0.97              0.97 
+        borisspan            brutal            captiv              case 
+             0.97              0.97              0.97              0.97 
+         challeng             chanc    charactersspan           concept 
+             0.97              0.97              0.97              0.97 
+          content           continu              copi             craft 
+             0.97              0.97              0.97              0.97 
+            creat           creativ           dayspan              dens 
+             0.97              0.97              0.97              0.97 
+           depict            desper            dicken disappointingspan 
+             0.97              0.97              0.97              0.97 
+          discuss            downer              draw             dread 
+             0.97              0.97              0.97              0.97 
+            dream              drew             drone               edg 
+             0.97              0.97              0.97              0.97 
+           effect           emphasi        endingspan           endless 
+             0.97              0.97              0.97              0.97 
+            event            eventu           everyon           everyth 
+             0.97              0.97              0.97              0.97 
+            excit         experienc            extran            extrem 
+             0.97              0.97              0.97              0.97 
+             fact               fan           fiction             figur 
+             0.97              0.97              0.97              0.97 
+            flesh             given              grab         greatspan 
+             0.97              0.97              0.97              0.97 
+            group              hand              hear             heavi 
+             0.97              0.97              0.97              0.97 
+             huge               ill           illumin            immers 
+             0.97              0.97              0.97              0.97 
+           includ           indepth      interestspan             intim 
+             0.97              0.97              0.97              0.97 
+          joyspan              jump               kid          knowledg 
+             0.97              0.97              0.97              0.97 
+             lead              leav              less             level 
+             0.97              0.97              0.97              0.97 
+            light              list             liter               man 
+             0.97              0.97              0.97              0.97 
+            manag            materi               may              mayb 
+             0.97              0.97              0.97              0.97 
+          meander          mindspan          morespan            narrat 
+             0.97              0.97              0.97              0.97 
+            negat             night            normal             nuanc 
+             0.97              0.97              0.97              0.97 
+              nyc           nycspan              open           outspan 
+             0.97              0.97              0.97              0.97 
+             over       overwritten          pagespan         pagesspan 
+             0.97              0.97              0.97              0.97 
+     paintingspan              pare            parent            perhap 
+             0.97              0.97              0.97              0.97 
+           poetri            ponder             power           preachi 
+             0.97              0.97              0.97              0.97 
+          predict           present          profound      pulitzerspan 
+             0.97              0.97              0.97              0.97 
+          quarter              rare             reach       readersspan 
+             0.97              0.97              0.97              0.97 
+           receiv            remark          research           respect 
+             0.97              0.97              0.97              0.97 
+             said           section              sens           sentenc 
+             0.97              0.97              0.97              0.97 
+          serious             sever           shorten           shorter 
+             0.97              0.97              0.97              0.97 
+             sinc               sit             sleep             speak 
+             0.97              0.97              0.97              0.97 
+             spot          storytel            stream             stuck 
+             0.97              0.97              0.97              0.97 
+             suck             super            surviv           tangent 
+             0.97              0.97              0.97              0.97 
+           teenag           televis              that        thoughspan 
+             0.97              0.97              0.97              0.97 
+    thoughtprovok            thrown              tire           tragedi 
+             0.97              0.97              0.97              0.97 
+            truth             vacat              vega         vegasspan 
+             0.97              0.97              0.97              0.97 
+             walk             wasnt              weav          wellspan 
+             0.97              0.97              0.97              0.97 
+             wish             wordi             world       writingspan 
+             0.97              0.97              0.97              0.97 
+          youspan              abus         abusespan            across 
+             0.97              0.96              0.96              0.96 
+            admit            answer            appeal            artist 
+             0.96              0.96              0.96              0.96 
+             avid              away             awhil               big 
+             0.96              0.96              0.96              0.96 
+       boringspan            bought             break             built 
+             0.96              0.96              0.96              0.96 
+          catcher            caught           central             charl 
+             0.96              0.96              0.96              0.96 
+            close            combin            compar           complic 
+             0.96              0.96              0.96              0.96 
+          connect            consum           contriv             count 
+             0.96              0.96              0.96              0.96 
+            cover             crazi               cut             death 
+             0.96              0.96              0.96              0.96 
+           decker              deft            delici              delv 
+             0.96              0.96              0.96              0.96 
+   depressingspan   descriptionspan           detract            dialog 
+             0.96              0.96              0.96              0.96 
+          didspan            dislik          distress            dospan 
+             0.96              0.96              0.96              0.96 
+           easili              educ               els            empath 
+             0.96              0.96              0.96              0.96 
+            exact            exceed             fabul            faster 
+             0.96              0.96              0.96              0.96 
+            fewer             filth        finishspan               fit 
+             0.96              0.96              0.96              0.96 
+            fizzl             focus              four              glow 
+             0.96              0.96              0.96              0.96 
+             gone           graphic              grow              hang 
+             0.96              0.96              0.96              0.96 
+            heard             hefti        hookedspan       howeverspan 
+             0.96              0.96              0.96              0.96 
+          impress             inner        intellectu          intellig 
+             0.96              0.96              0.96              0.96 
+        intricaci             julia              late             later 
+             0.96              0.96              0.96              0.96 
+            least             locat              loos             lover 
+             0.96              0.96              0.96              0.96 
+       masterpiec   masterpiecespan              mean           mediocr 
+             0.96              0.96              0.96              0.96 
+            memor           neglect             notic              okay 
+             0.96              0.96              0.96              0.96 
+           onspan        particular          partspan              pass 
+             0.96              0.96              0.96              0.96 
+            peopl            plenti           plotlin          poignant 
+             0.96              0.96              0.96              0.96 
+           promis          question        readerspan           realiti 
+             0.96              0.96              0.96              0.96 
+            refer            regard            reward              save 
+             0.96              0.96              0.96              0.96 
+              saw             short           similar            slight 
+             0.96              0.96              0.96              0.96 
+             slog              slow            sospan             sound 
+             0.96              0.96              0.96              0.96 
+        spellbind            spiral           struggl         sympathet 
+             0.96              0.96              0.96              0.96 
+         sympathi            talent           tedious              theo 
+             0.96              0.96              0.96              0.96 
+            there               tho    throughoutspan       throughspan 
+             0.96              0.96              0.96              0.96 
+            throw             toler           traumat              type 
+             0.96              0.96              0.96              0.96 
+         unbeliev       unnecessari     unnecessarili         unsatisfi 
+             0.96              0.96              0.96              0.96 
+           uplift              usag              wade             watch 
+             0.96              0.96              0.96              0.96 
+      wellwritten              what           whyspan               win 
+             0.96              0.96              0.96              0.96 
+           within              work              york               abl 
+             0.96              0.96              0.96              0.95 
+        aboutspan           acclaim            adject      afterthought 
+             0.95              0.95              0.95              0.95 
+        againspan             ahead       alcoholspan               amp 
+             0.95              0.95              0.95              0.95 
+       authorspan       awesomespan             began             bridg 
+             0.95              0.95              0.95              0.95 
+           bright              cast         character            charat 
+             0.95              0.95              0.95              0.95 
+            charm         childhood          children             chose 
+             0.95              0.95              0.95              0.95 
+             citi           clutter           comment        complement 
+             0.95              0.95              0.95              0.95 
+           consid           contain             cours            deeper 
+             0.95              0.95              0.95              0.95 
+          despair            despit          destruct           digress 
+             0.95              0.95              0.95              0.95 
+           direct          disjoint              dive          donespan 
+             0.95              0.95              0.95              0.95 
+            drink          drudgeri               due            eighth 
+             0.95              0.95              0.95              0.95 
+            escap            explan            explor          exquisit 
+             0.95              0.95              0.95              0.95 
+            extra               eye           fantast      favoritespan 
+             0.95              0.95              0.95              0.95 
+             five          frustrat             funni           general 
+             0.95              0.95              0.95              0.95 
+             gift          gorgeous            gotten              grew 
+             0.95              0.95              0.95              0.95 
+       happenspan             haunt            havent              head 
+             0.95              0.95              0.95              0.95 
+        heartwarm             human             hundr              hung 
+             0.95              0.95              0.95              0.95 
+             hype           imageri            imposs            inspir 
+             0.95              0.95              0.95              0.95 
+           intric              issu            lesson          lessspan 
+             0.95              0.95              0.95              0.95 
+           letter           librari           lifetim          likespan 
+             0.95              0.95              0.95              0.95 
+            major            marvel            master             match 
+             0.95              0.95              0.95              0.95 
+          meaning              meet             merit             might 
+             0.95              0.95              0.95              0.95 
+            minut              mire            miseri           monoton 
+             0.95              0.95              0.95              0.95 
+            moral          mustspan          nextspan              none 
+             0.95              0.95              0.95              0.95 
+             noth            number             older            origin 
+             0.95              0.95              0.95              0.95 
+           orphan            outset          outstand    paragraphsspan 
+             0.95              0.95              0.95              0.95 
+          passion          perspect            pictur          pleasant 
+             0.95              0.95              0.95              0.95 
+           poetic           portion          previous       protagonist 
+             0.95              0.95              0.95              0.95 
+        psycholog             punch           purchas              push 
+             0.95              0.95              0.95              0.95 
+           reason           reflect            rememb            remind 
+             0.95              0.95              0.95              0.95 
+           repeat            reveal            romant             rough 
+             0.95              0.95              0.95              0.95 
+             rush           sadspan           satisfi            school 
+             0.95              0.95              0.95              0.95 
+           search            select              seri             share 
+             0.95              0.95              0.95              0.95 
+          sharpli             shock       shorterspan              show 
+             0.95              0.95              0.95              0.95 
+             sick             small             smart             solid 
+             0.95              0.95              0.95              0.95 
+             soon             stick            street          strength 
+             0.95              0.95              0.95              0.95 
+       superbspan             swath              tens        throughout 
+             0.95              0.95              0.95              0.95 
+             thru              till           tonight             tooth 
+             0.95              0.95              0.95              0.95 
+            topic            tragic            trauma            troubl 
+             0.95              0.95              0.95              0.95 
+           turner             twice         uncontrol            uneven 
+             0.95              0.95              0.95              0.95 
+          unpleas         unpredict            visual             vivid 
+             0.95              0.95              0.95              0.95 
+       vocabulari            window          wordspan              wors 
+             0.95              0.95              0.95              0.95 
+       writerspan       writtenspan         yearsspan           account 
+             0.95              0.95              0.95              0.94 
+       actionspan         adulthood            albeit          american 
+             0.94              0.94              0.94              0.94 
+           aspect            audibl             audio             award 
+             0.94              0.94              0.94              0.94 
+         backdrop            breath             build              call 
+             0.94              0.94              0.94              0.94 
+             came               car          categori           centuri 
+             0.94              0.94              0.94              0.94 
+         committe            concis           condens         conscious 
+             0.94              0.94              0.94              0.94 
+         constant          convolut             degre            demand 
+             0.94              0.94              0.94              0.94 
+            desir        detailspan         didntspan              disc 
+             0.94              0.94              0.94              0.94 
+         distract          downward            dramat            effort 
+             0.94              0.94              0.94              0.94 
+            eloqu           environ             excus      expectedspan 
+             0.94              0.94              0.94              0.94 
+            fault              flaw       foreverspan          frequent 
+             0.94              0.94              0.94              0.94 
+              fun              help        highlyspan              hobi 
+             0.94              0.94              0.94              0.94 
+           honest           horribl            horrif          hypespan 
+             0.94              0.94              0.94              0.94 
+           immedi          individu            indulg        interwoven 
+             0.94              0.94              0.94              0.94 
+           invest            labori              larg            latter 
+             0.94              0.94              0.94              0.94 
+            layer           letdown          lifestyl             limit 
+             0.94              0.94              0.94              0.94 
+         linespan         livesspan          lovespan         lovetspan 
+             0.94              0.94              0.94              0.94 
+           mental             money              mood            museum 
+             0.94              0.94              0.94              0.94 
+            natur         necessari         novelspan           obvious 
+             0.94              0.94              0.94              0.94 
+ [ reached getOption("max.print") -- omitted 5234 entries ]
+
+> TDM.common = removeSparseTerms(TDM,0.1) # commonly occuring terms with allowed less sparsity between range 0-1
+> dim(TDM) # dimensions
+[1] 20008    15
+> dim(TDM.common)
+[1] 668  15
+> inspect(TDM.common[1:15,1:15])
+<<TermDocumentMatrix (terms: 15, documents: 15)>>
+Non-/sparse entries: 216/9
+Sparsity           : 4%
+Maximal term length: 8
+Weighting          : term frequency (tf)
+Sample             :
+          Docs
+Terms       1 10  2  3  4  5  6  7  8 9
+  abil     43  3 27 10 15  7  2  5  3 3
+  abl      43  4 27 23 16 23  9  8  4 4
+  absolut  66  2 25 18  9  8  5  2  4 4
+  abus     49  0 44 26 13 14  7  9  4 1
+  action   44  7 47 39 28 11 18  8  6 4
+  actual   91 11 55 38 36 21 16 19  9 6
+  addict   82  7 52 38 38 22 14  8 13 9
+  adult    33  2 30 27 22 15  9  9  8 1
+  adventur 38  4 27 21 13  5  2  4  3 4
+  age      75  5 48 38 28 21 11 12 14 7
+> 
+> library(slam)
+> TDM.dense <- as.matrix(TDM.common) # attempt to turn its argument into matrix
+> TDM.dense
+              Docs
+Terms             1    2    3   4   5   6   7   8   9  10  11  12 13 14 15
+  abil           43   27   10  15   7   2   5   3   3   3   4   5  0  2  1
+  abl            43   27   23  16  23   9   8   4   4   4   3   3  0  1  2
+  absolut        66   25   18   9   8   5   2   4   4   2   0   1  2  3  3
+  abus           49   44   26  13  14   7   9   4   1   0   3   3  2  4  5
+  accent          7    4    7   6   1   3   3   1   2   1   0   2  2  2  2
+  across         22   14   10   2   5   3   3   4   1   4   3   2  1  1  1
+  act            20   10    9   4   8   8   6   7   3   3   6   1  2  0  2
+  action         44   47   39  28  11  18   8   6   4   7   5   3  1  5  0
+  actual         91   55   38  36  21  16  19   9   6  11   6   5  5  7  3
+  addict         82   52   38  38  22  14   8  13   9   7   5   5  7  2  2
+  adolesc        25   14   10   8   4   9   6   3   1   1   2   3  1  2  1
+  adult          33   30   27  22  15   9   9   8   1   2   5   6  3  4  0
+  adventur       38   27   21  13   5   2   4   3   4   4   5   2  2  1  2
+  age            75   48   38  28  21  11  12  14   7   5   5   5  2  2  6
+  ago            24    7   12   5   5   7   2   1   3   1   1   0  4  1  1
+  agre           31   18   13  12   2  11   5   2   4   3   3   2  1  1  2
+  alcohol        94   75   60  26  19  19   8  17   9   7   9   6  4  5  8
+  aliv           33   18    9   5   2   1   2   1   4   1   1   2  2  0  2
+  allow          19   17    5  12   5   3   6   4   4   2   2   1  2  3  2
+  almost        140   95   54  43  38  25  17  13   7   6   8   3  8  5  4
+  alon           12   12    4   8   5   6   4   3   3   3   1   1  1  3  2
+  along          87   64   42  35  23  15  13   6   8   9   3   6 10  1  4
+  alreadi        27   23   22   9   6   6   5   2   3   1   5   3  3  3  1
+  also          208  120  101  83  45  40  51  23  25  16  19  22 17 13 13
+  although      139   54   37  33  15  17   9   2   3   4   3   5  1  1  4
+  alway          97   80   38  19  18  15  13   6   8  14   6   5  7  6  3
+  amaz          146   63   32  31  23  11   5   3   7   4   3   1  4  2  2
+  american       19    8    7   7   4   5   2   3   6   0   1   1  1  2  2
+  among          16    5    7   7  11   2   2   3   5   1   2   1  1  0  2
+  amount         31   20   15   7   8   5   1   2   2   1   2   0  3  2  3
+  amp            61   57   42  29  10   8   9   4   3   3   2   0  2  1  2
+  amsterdam      38   32   28  24  17  21  12  11   6  10   4   7  6  9  7
+  andi            9   10    3   3   2   3  11   2   3   5   2   3  3  4  2
+  annoy          21   17   15  12   1   8   6   4   5   2   0   3  2  3  2
+  anoth         129   97   66  36  18  28  16  11  11  14   6   7  7  5  6
+  antiqu         57   59   48  40  29  21  15  16  10   9   9   5  7  6  6
+  anyon          81   52   43  23  15   7   7   7   8   3   4   8  2  3  2
+  anyth          64   43   26  32  21  11   7   9   7   3   8   3  5  1  2
+  apart          17    9   10   5   5   3   4   4   6   2   5   2  0  1  2
+  appear         21   13    4  10  10   8   6   1   2   1   4   2  4  2  3
+  appreci        69   44   29  13  17   2  13   2   8   2   4   2  5  3  4
+  around         77   59   39  21  14  11  13  14   7  11   8   3  7  2  5
+  art           333  278  176 133  94  78  51  48  32  35  26  31 19 16 24
+  artist         40   26    8  10   8   9   6   7   6   1   5   3  2  0  1
+  ask            28   17   22  13  12   8   4   7   3   1   2   2  3  1  1
+  aspect         15   12   11   4   5   3   1   1   1   1   0   2  2  1  1
+  attent         83   42   25  12   9   6   4   8   6   6   2   3  1  2  3
+  author        534  324  221 145  98  89  56  49  26  22  25  24 14 18 13
+  away           65   61   37  31  18  10  13  12   8   7   6   9  6  5  6
+  back          147  104   85  43  44  28  30  16  17  13  17   7 14  6  5
+  bad           126  103   67  55  37  29  21  16  15  13   8   7  7  6  8
+  barbour         9   10    8   8   4   9   8   8   3   3   0   2  2  4  6
+  base           27   20   13   7   4   4   2   4   2   1   3   1  0  2  1
+  basic          27   18   10   7   6   4   2   1   2   2   1   3  1  1  0
+  beauti        435  274  144  96  63  44  25  20  18  19  15  15 14 11 10
+  becam         136   81   55  38  22  14   8   3   3   2   4   4  7  2  1
+  becom         117   89   65  37  33  29  18  11  11   8  12   8 12 14 11
+  began          28   24   19   9   9   3   2   3   4   3   1   3  2  2  1
+  begin         181   89   58  41  28  18  12  10   6   2  11   4 10  1  6
+  believ        131   98   56  38  36  11  17  14   8   9   8   8  8  4  4
+  best          197  121   72  51  32  26  21  11  21   8   7   8  7  6  6
+  better        187   89   54  50  31  26  22  21   8   6   9  11  3  5  7
+  beyond         34   29   15  11   6   7   3   4   3   2   1   1  1  1  1
+  big            54   32   39  22  10  10   4   9   5   7   7   1  5  2  3
+  bird           22   10   10  10   8   5   3   4   4   3   3   2  9  2  0
+  bit           288  175   89  59  33  33  20  14  14  15  11  10  9  4  6
+ [ reached getOption("max.print") -- omitted 602 rows ]
+> #summary(TDM.dense)
+> 
+> # Object.size provides an estimate of the memory that is being used to store an R object
+> object.size(TDM.common)
+197520 bytes
+> object.size(TDM.dense)
+119520 bytes
+> 
+> library(wordcloud)
+> library(RColorBrewer)
+> palette <- brewer.pal(9,"Purples")[-(1:4)] #brewer.pal: function for color Palette
+> wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1, color= palette)
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> #Convert dtm to matrix
+> m <- as.matrix(DTM)
+> 
+> x <- rbind(m)
+> x <-t(x)
+> result <- cmeans(x,7,22861,verbose = TRUE,method = "cmeans")
+Iteration:   1, Error: 455.1041140616
+Iteration:   2, Error: 436.4104166354
+Iteration:   3, Error: 418.6335456203
+Iteration:   4, Error: 399.4126642439
+Iteration:   5, Error: 381.3709838979
+Iteration:   6, Error: 364.2504345928
+Iteration:   7, Error: 347.7243608383
+Iteration:   8, Error: 330.1656908458
+Iteration:   9, Error: 312.9784178020
+Iteration:  10, Error: 298.7522824242
+Iteration:  11, Error: 288.6534041666
+Iteration:  12, Error: 281.1966432100
+Iteration:  13, Error: 275.0493618081
+Iteration:  14, Error: 269.4793203661
+Iteration:  15, Error: 264.1507849398
+Iteration:  16, Error: 258.9051312754
+Iteration:  17, Error: 253.6224956109
+Iteration:  18, Error: 248.2642277623
+Iteration:  19, Error: 242.8060370952
+Iteration:  20, Error: 237.1472997902
+Iteration:  21, Error: 231.4243684988
+Iteration:  22, Error: 226.3406856931
+Iteration:  23, Error: 222.2538398025
+Iteration:  24, Error: 218.7105197323
+Iteration:  25, Error: 214.8236277953
+Iteration:  26, Error: 208.6676338527
+Iteration:  27, Error: 195.0364253446
+Iteration:  28, Error: 175.0170197656
+Iteration:  29, Error: 166.7567460549
+Iteration:  30, Error: 163.7633100809
+Iteration:  31, Error: 161.9926589924
+Iteration:  32, Error: 160.5942256455
+Iteration:  33, Error: 159.3388991512
+Iteration:  34, Error: 158.1506399398
+Iteration:  35, Error: 157.0005705413
+Iteration:  36, Error: 155.8790910711
+Iteration:  37, Error: 154.7880220199
+Iteration:  38, Error: 153.7373754294
+Iteration:  39, Error: 152.7423206128
+Iteration:  40, Error: 151.8194513905
+Iteration:  41, Error: 150.9828082149
+Iteration:  42, Error: 150.2406484412
+Iteration:  43, Error: 149.5939302045
+Iteration:  44, Error: 149.0368568119
+Iteration:  45, Error: 148.5589507102
+Iteration:  46, Error: 148.1476325536
+Iteration:  47, Error: 147.7904497728
+Iteration:  48, Error: 147.4765980675
+Iteration:  49, Error: 147.1977587172
+Iteration:  50, Error: 146.9483808314
+Iteration:  51, Error: 146.7254786707
+Iteration:  52, Error: 146.5279734359
+Iteration:  53, Error: 146.3557025704
+Iteration:  54, Error: 146.2083962808
+Iteration:  55, Error: 146.0849849702
+Iteration:  56, Error: 145.9834291040
+Iteration:  57, Error: 145.9009788564
+Iteration:  58, Error: 145.8346063300
+Iteration:  59, Error: 145.7813856625
+Iteration:  60, Error: 145.7387239665
+Iteration:  61, Error: 145.7044500435
+Iteration:  62, Error: 145.6768096265
+Iteration:  63, Error: 145.6544148322
+Iteration:  64, Error: 145.6361795286
+Iteration:  65, Error: 145.6212571394
+Iteration:  66, Error: 145.6089874892
+Iteration:  67, Error: 145.5988540489
+Iteration:  68, Error: 145.5904506536
+Iteration:  69, Error: 145.5834560342
+Iteration:  70, Error: 145.5776144794
+Iteration:  71, Error: 145.5727211770
+Iteration:  72, Error: 145.5686110839
+Iteration:  73, Error: 145.5651504369
+Iteration:  74, Error: 145.5622302417
+Iteration:  75, Error: 145.5597612465
+Iteration:  76, Error: 145.5576700343
+Iteration:  77, Error: 145.5558959639
+Iteration:  78, Error: 145.5543887584
+Iteration:  79, Error: 145.5531065918
+Iteration:  80, Error: 145.5520145613
+Iteration:  81, Error: 145.5510834594
+Iteration:  82, Error: 145.5502887827
+Iteration:  83, Error: 145.5496099268
+Iteration:  84, Error: 145.5490295296
+Iteration:  85, Error: 145.5485329328
+Iteration:  86, Error: 145.5481077395
+Iteration:  87, Error: 145.5477434485
+Iteration:  88, Error: 145.5474311516
+Iteration:  89, Error: 145.5471632817
+Iteration:  90, Error: 145.5469334027
+Iteration:  91, Error: 145.5467360347
+Iteration:  92, Error: 145.5465665070
+Iteration:  93, Error: 145.5464208346
+Iteration:  94, Error: 145.5462956147
+Iteration:  95, Error: 145.5461879390
+Iteration:  96, Error: 145.5460953203
+Iteration:  97, Error: 145.5460156297
+Iteration:  98, Error: 145.5459470443
+Iteration:  99, Error: 145.5458880016
+Iteration: 100, Error: 145.5458371620
+Iteration: 101, Error: 145.5457933764
+Iteration: 102, Error: 145.5457556586
+Iteration: 103, Error: 145.5457231615
+Iteration: 104, Error: 145.5456951579
+Iteration: 105, Error: 145.5456710224
+Iteration: 106, Error: 145.5456502177
+Iteration: 107, Error: 145.5456322816
+Iteration: 108, Error: 145.5456168167
+Iteration: 109, Error: 145.5456034809
+Iteration: 110, Error: 145.5455919797
+Iteration: 111, Error: 145.5455820599
+Iteration: 112, Error: 145.5455735031
+Iteration: 113, Error: 145.5455661214
+Iteration: 114, Error: 145.5455597529
+Iteration: 115, Error: 145.5455542581
+Iteration: 116, Error: 145.5455495168
+Iteration: 117, Error: 145.5455454255
+Iteration: 118, Error: 145.5455418947
+Iteration: 119, Error: 145.5455388476
+Iteration: 120, Error: 145.5455362177
+Iteration: 121, Error: 145.5455339478
+Iteration: 122 converged, Error: 145.5455319885
+> print(result)
+  7                                  5 
+                            abject                                abl 
+                                 5                                  7 
+                            abnorm                             abound 
+                                 5                                  5 
+                         aboutbrbr                        aboutbrbrit 
+                                 5                                  5 
+                  aboutbrbrmysteri                        aboutbrdont 
+                                 5                                  5 
+                         aboutbrth                         aboutbrwhi 
+                                 5                                  5 
+                        aboutbryou                          abouthalf 
+                                 5                                  5 
+                     aboutotherwis                          aboutspan 
+                                 5                                  5 
+                           aboutth                         abouttspan 
+                                 5                                  5 
+                         abovespan                           abrhappi 
+                                 5                                  5 
+                            abridg                             abrlet 
+                                 5                                  5 
+                           abrnarr                          abrpulitz 
+                                 5                                  5 
+                            abrupt                            abrveri 
+                                 5                                  5 
+                            absent                          absoespan 
+                                 5                                  5 
+                           absolut                     absolutelyspan 
+                                 7                                  5 
+                            absorb                    absorbingbrwond 
+                                 7                                  5 
+                     absorbingspan                           abstract 
+                                 5                                  5 
+                            absurd                        absurdtspan 
+                                 5                                  5 
+                             abund                               abus 
+                                 5                                  7 
+                        abusebrnot                          abusespan 
+                                 5                                  5 
+                              abut                         abysstspan 
+                                 5                                  5 
+                            academ                            acceler 
+                                 5                                  5 
+                            accent                             accept 
+                                 5                                  5 
+                  acceptablebrview                             access 
+                                 5                                  5 
+                             accid                            acclaim 
+                                 5                                  5 
+                       acclaimspan                            accolad 
+                                 5                                  5 
+                          accommod                         accomplish 
+                                 5                                  5 
+                            accord                            account 
+                                 5                                  5 
+                     accountbrbrth                        accountspan 
+                                 5                                  5 
+                        accountthi                       accounttspan 
+                                 5                                  5 
+                              acct                              accur 
+                                 5                                  5 
+                          accuraci                                ach 
+                                 5                                  5 
+                           achebri                             acheiv 
+                                 5                                  5 
+                            achiev                    achievementspan 
+                                 5                                  5 
+                               ack                         acknowledg 
+                                 5                                  5 
+                      acoladesspan                           acquaint 
+                                 5                                  5 
+                            acquir                           acquisit 
+                                 5                                  5 
+                            across                                act 
+                                 7                                  7 
+                            action                     actionadventur 
+                                 7                                  5 
+                        actionspan                       actionstspan 
+                                 5                                  5 
+                       actionthril                              activ 
+                                 5                                  5 
+                             actor                             actual 
+                                 5                                  1 
+                     actuallytspan                             acuiti 
+                                 5                                  5 
+                              acwa                               adag 
+                                 5                                  5 
+                              adam                              adapt 
+                                 5                                  5 
+                               add                       addendumspan 
+                                 7                                  5 
+                            addict                   addictionalcohol 
+                                 1                                  5 
+                     addictionspan                     addictiontspan 
+                                 5                                  5 
+                    addictsalcohol                         addictspan 
+                                 5                                  5 
+                             addit                               addl 
+                                 5                                  5 
+                           address                              adept 
+                                 5                                  5 
+                             adequ                               adhd 
+                                 5                                  5 
+                            adject                             adjust 
+                                 5                                  5 
+                             admir                        admiredspan 
+                                 5                                  5 
+                        admirespan                              admit 
+                                 5                                  7 
+                         admospher                                ado 
+                                 5                                  5 
+                           adolesc                               ador 
+                                 7                                  5 
+                            adrift                              adult 
+                                 5                                  7 
+                        adultadult                          adulthood 
+                                 5                                  7 
+                     adulthoodspan                           adultish 
+                                 5                                  5 
+                       adultstspan                             advanc 
+                                 5                                  5 
+                          adventur                  adventurebrstrong 
+                                 7                                  5 
+        adventureontheamericanroad                      adventurespan 
+                                 5                                  5 
+                    adventuresspan                             adverb 
+                                 5                                  5 
+                            advers                      adversityspan 
+                                 5                                  5 
+                      adveturespan                              advic 
+                                 5                                  5 
+                             advis                            aesthet 
+                                 5                                  5 
+                              afar                             affair 
+                                 5                                  5 
+                            affect                              affin 
+                                 7                                  5 
+                            afford                         aficionado 
+                                 5                                  5 
+                    aficionadospan                             afield 
+                                 5                                  5 
+                            afraid                            afteral 
+                                 5                                  5 
+                         aftermath                          afternoon 
+                                 5                                  5 
+                      afterthought                          afterward 
+                                 5                                  5 
+                     afterwardspan                     afterwardsspan 
+                                 5                                  5 
+                          afterwel                          againbrbr 
+                                 5                                  5 
+                       againbrbrth                             againi 
+                                 5                                  5 
+                  againshorterspan                      againsoonspan 
+                                 5                                  5 
+                         againspan                         againtspan 
+                                 7                                  5 
+                               age                             agenda 
+                                 1                                  5 
+                            ageold                           agetspan 
+                                 5                                  5 
+                            aggrav                             aggreg 
+                                 5                                  5 
+                              agil                               agit 
+                                 5                                  5 
+                               agn                                ago 
+                                 5                                  7 
+                              agod                               agon 
+                                 5                                  5 
+                             agoni                             agonis 
+                                 5                                  5 
+                              agre                          agreespan 
+                                 7                                  5 
+                               aha                              ahead 
+                                 5                                  5 
+                         aheadspan                               ahha 
+                                 5                                  5 
+                          ahttspan                                aid 
+                                 5                                  5 
+                               aim                            aimless 
+                                 5                                  5 
+                              aint                                air 
+                                 5                                  5 
+                           airplan                            airport 
+                                 5                                  5 
+                              akin                                ala 
+                                 5                                  5 
+                             alack                              alarm 
+                                 5                                  5 
+                            alaway                             albeit 
+                                 5                                  5 
+                          alchohol                            alcohol 
+                                 5                                  1 
+                     alcoholbrabus                        alcoholspan 
+                                 5                                  5 
+                             alert                         alerttspan 
+                                 5                                  5 
+                             alien                             aliitl 
+                                 5                                  5 
+                              alik                          alikespan 
+                                 5                                  5 
+                            alittl                               aliv 
+                                 5                                  7 
+                    alivebrbrcould                          alivespan 
+                                 5                                  5 
+                               all                        allbrbrboth 
+                                 5                                  5 
+                         allbrdont                            allbrim 
+                                 5                                  5 
+                           allegor                           allegori 
+                                 5                                  5 
+                           allerit                              alley 
+                                 5                                  5 
+                             allot                              allow 
+                                 5                                  7 
+                           allspan                             alltim 
+                                 7                                  5 
+                       alltoobrief                       alltoocommon 
+                                 5                                  5 
+                          alltspan                              allur 
+                                 5                                  5 
+                             allus                             almost 
+                                 5                                  1 
+                              alon                              along 
+                                 5                                  1 
+                          alongbrr                             alongi 
+                                 5                                  5 
+                         alongspan                         alongtspan 
+                                 5                                  5 
+                              alot                              aloud 
+                                 5                                  5 
+                           alreadi                          alreadybr 
+                                 7                                  5 
+                        alreadymov                       alreadytspan 
+                                 5                                  5 
+                           alright                               also 
+                                 5                                  3 
+                             alsoi                              alter 
+                                 5                                  5 
+                            altern                              altho 
+                                 5                                  5 
+                          although                           altogeth 
+                                 1                                  5 
+                altogetherbrbrther                               alum 
+                                 5                                  5 
+                             alway                          amadeusâ€ 
+                                 1                                  5 
+                           amateur                         amateurish 
+                                 5                                  5 
+                              amaz                       amazingbrbri 
+                                 1                                  5 
+                        amazingbri                        amazingspan 
+                                 5                                  5 
+                      amazingtspan                             amazon 
+                                 5                                  7 
+                         amazoncom                      amazoncomspan 
+                                 5                                  5 
+                           ambianc                             ambigu 
+                                 5                                  5 
+                             ambit                             ambiti 
+                                 5                                  5 
+                           ambival                             ambrbr 
+                                 5                                  5 
+                           america                           american 
+                                 5                                  7 
+                              amid                             amidst 
+                                 5                                  5 
+                             amiss                              among 
+                                 5                                  5 
+                           amongst                               amor 
+                                 5                                  5 
+                            amount                                amp 
+                                 7                                  1 
+                         amsterdam                       amsterdambri 
+                                 7                                  5 
+                amsterdambrlanguag                      amsterdamseem 
+                                 5                                  5 
+                     amsterdamspan                               amus 
+                                 5                                  5 
+                          anachron                        anaethestis 
+                                 5                                  5 
+                            analog                             analys 
+                                 5                                  5 
+                           analysi                             anarch 
+                                 5                                  5 
+                            anchor                            ancient 
+                                 5                                  5 
+                          andbrand                         andbrcarri 
+                                 5                                  5 
+                        andbrcould                          andbrdrug 
+                                 5                                  5 
+                         andbrhigh                             andbri 
+                                 5                                  5 
+                         andbrveri                               andi 
+                                 5                                  5 
+                           andmuch                              andor 
+                                 5                                  5 
+                            andrew                            andspan 
+                                 5                                  5 
+                    anesthesiaspan                               anew 
+                                 5                                  5 
+                             anger                               angl 
+                                 5                                  5 
+                             angri                              angst 
+                                 5                                  7 
+                          angstrom                            anguish 
+                                 5                                  5 
+                              anim                             animus 
+                                 5                                  5 
+                              ankl                         anklebrbri 
+                                 5                                  5 
+                               ann                               anna 
+                                 5                                  5 
+                              annd                           annespan 
+                                 5                                  5 
+                           annmari                              annoy 
+                                 5                                  7 
+                      annoyingspan                             anonym 
+                                 5                                  5 
+                             anoth                        anotherspan 
+                                 1                                  5 
+                              anoy                            anquish 
+                                 5                                  5 
+                            answer                      answersbrbrif 
+                                 7                                  5 
+                          answerth                                ant 
+                                 5                                  5 
+                            antast                               anti 
+                                 5                                  5 
+                             antic                            anticip 
+                                 5                                  5 
+                       anticlimact                  anticlimacticspan 
+                                 5                                  5 
+                        anticlimat                         anticlimax 
+                                 5                                  5 
+                    antidickensian                           antihero 
+                                 5                                  5 
+                            antiqu                        antiquarian 
+                                 1                                  5 
+                      antiquesspan                      antiquestspan 
+                                 5                                  5 
+                           antwerp                            anxieti 
+                                 5                                  5 
+                     anxietyproduc                       anxietytspan 
+                                 5                                  5 
+                           anxious                            anybodi 
+                                 5                                  5 
+                           anybrof                             anymor 
+                                 5                                  5 
+                       anymorespan                          anymoreth 
+                                 5                                  5 
+                             anyon                           anyonebr 
+                                 1                                  5 
+                     anyonebrbrthi                      anyonedefinit 
+                                 5                                  5 
+                        anyonemuch                         anyonespan 
+                                 5                                  5 
+                          anyoneth                        anyonetspan 
+                                 5                                  5 
+                             anyth                       anythingspan 
+                                 7                                  5 
+                     anythingtspan                             anytim 
+                                 5                                  5 
+                       anytimespan                             anyway 
+                                 5                                  5 
+                        anywayspan                            anywher 
+                                 5                                  5 
+                     anywheretspan                              apart 
+                                 5                                  7 
+                            apathi                             apolog 
+                                 5                                  5 
+                             appal                              appar 
+                                 5                                  5 
+                            appeal                             appear 
+                                 7                                  7 
+                        appearsbut                            appetit 
+                                 5                                  5 
+                      appetitespan                               appl 
+                                 5                                  5 
+                           applaud                            applaus 
+                                 5                                  5 
+                             appli                             applic 
+                                 5                                  5 
+                           appoint                            apprais 
+                                 5                                  5 
+                           appreci                   appreciationspan 
+                                 7                                  5 
+                          approach                   approachablespan 
+                                 5                                  5 
+                          appropri                    appropriatespan 
+                                 5                                  5 
+                            approv                              april 
+                                 5                                  5 
+                            apropo                                apt 
+                                 5                                  5 
+                           aptitud                              aquir 
+                                 5                                  5 
+                               arc                               arch 
+                                 5                                  5 
+                           arcspan                            arduous 
+                                 5                                  5 
+                              area                              arena 
+                                 7                                  5 
+                             arent                            arespan 
+                                 5                                  5 
+                              argu                            arguabl 
+                                 5                                  5 
+                          argument                            arizona 
+                                 5                                  5 
+                          armchair                             around 
+                                 5                                  1 
+                        aroundspan                             arrang 
+                                 5                                  5 
+                   arrangementspan                              array 
+                                 5                                  5 
+                             arriv                              arrog 
+                                 5                                  5 
+                               art                         artbrdonna 
+                                 3                                  5 
+                           artbrth                             arteri 
+                                 5                                  5 
+                       artfurnitur                             articl 
+                                 5                                  5 
+                           articul                           artifact 
+                                 5                                  5 
+                            artist                        artistbrfor 
+                                 7                                  5 
+                          artistri                        artistsspan 
+                                 5                                  5 
+                             artsi                            artspan 
+                                 5                                  5 
+                          arttspan                             arturo 
+                                 5                                  5 
+                           artwork                              asbra 
+                                 5                                  5 
+                      asbroverlong                           asbrreal 
+                                 5                                  5 
+                               ash                              asham 
+                                 5                                  5 
+                              asid                                ask 
+                                 5                                  7 
+                         askedspan                             asleep 
+                                 5                                  5 
+                         asleepbut                         asleepspan 
+                                 5                                  5 
+                      aspacingsmal                    aspacingtopmini 
+                                 5                                  5 
+                            aspect                       aspectstspan 
+                                 7                                  5 
+                             aspir                            assault 
+                                 5                                  5 
+                            assess                             assign 
+                                 5                                  5 
+                            assist                             associ 
+                                 5                                  5 
+                   associationspan                             assort 
+                                 5                                  5 
+                             assum                            assumpt 
+                                 5                                  5 
+                             assur                           astonish 
+                                 5                                  5 
+                   astonishingspan                            astound 
+                                 5                                  5 
+                            astray                         astraybrit 
+                                 5                                  5 
+                               ate                                ath 
+                                 5                                  5 
+                             atlas                          atmospher 
+                                 5                                  5 
+                    atmospherespan                               aton 
+                                 5                                  5 
+                            attach                             attack 
+                                 5                                  7 
+                            attain                            attempt 
+                                 5                                  7 
+                       attemptspan                           attemtpt 
+                                 5                                  5 
+                            attend                             attent 
+                                 5                                  1 
+                     attentionbrit                      attentionspan 
+                                 5                                  5 
+                       attentionto                            attitud 
+                                 5                                  5 
+                              attn                            attract 
+                                 5                                  5 
+                         aubynspan                             audibl 
+                                 5                                  5 
+                           audienc                     audiencebrbron 
+                                 5                                  5 
+                      audiencespan                              audio 
+                                 5                                  5 
+                         audiobook                     audiobooktspan 
+                                 5                                  5 
+                            audrey                               aura 
+                                 5                                  5 
+                           authent                             author 
+                                 5                                  4 
+                          authorbr                      authorbrbegan 
+                                 5                                  5 
+                  authorbrbrcannot                      authorbrbrhav 
+                                 5                                  5 
+                  authorbrbrreserv                        authorbrwil 
+                                 5                                  5 
+                       authordonna                          authorhop 
+                                 5                                  5 
+                          authorit                         authorspan 
+                                 5                                  7 
+                       authortspan                          authorwel 
+                                 5                                  5 
+                         authorâ€™                      autobiographi 
+                                 5                                  5 
+                             avail                      availablespan 
+                                 5                                  5 
+                         availspan                           avalanch 
+                                 5                                  5 
+                               ave                              avenu 
+                                 5                                  5 
+                            averag                               avid 
+                                 5                                  5 
+                             avoid                              await 
+                                 5                                  5 
+                            awaken                               awar 
+                                 5                                  5 
+                             award                          awardspan 
+                                 7                                  5 
+                          awardwin                               away 
+                                 5                                  1 
+                        awaybrwhen                           awayread 
+                                 5                                  5 
+                          awayspan                          awaytspan 
+                                 5                                  5 
+                               awe                             awesom 
+                                 5                                  5 
+                       awesomespan                       awesometspan 
+                                 5                                  5 
+                         awestruck                              awhil 
+                                 5                                  7 
+                        awhilespan                               awri 
+                                 5                                  5 
+                             axiom                                ayn 
+                                 5                                  5 
+                             babbl                               babi 
+                                 5                                  5 
+                             bacam                               back 
+                                 5                                  1 
+                           backbon                          backbrrec 
+                                 5                                  5 
+                          backdrop                         background 
+                                 5                                  7 
+                       backgroundi                           backspan 
+                                 5                                  5 
+                         backstori                          backtspan 
+                                 5                                  5 
+                          backward                                bad 
+                                 5                                  1 
+                        badlytspan                            badspan 
+                                 5                                  5 
+                          badtspan                              baffl 
+                                 5                                  5 
+                               bag                              baggi 
+                                 5                                  5 
+                              bail                             balanc 
+                                 5                                  5 
+                       balancespan                           bamboozl 
+                                 5                                  5 
+                             banal                          bandwagon 
+                                 5                                  5 
+                              bang                          bangbrbri 
+                                 5                                  5 
+                         bangliter                           bangspan 
+                                 5                                  5 
+                           banquet                                bar 
+                                 5                                  5 
+                             barag                            barbara 
+                                 5                                  5 
+                           barbour                               bare 
+                                 5                                  5 
+                           bargain                        bargainspan 
+                                 5                                  5 
+                              base                               basi 
+                                 7                                  5 
+                             basic                              basil 
+                                 7                                  5 
+                               bat                               bath 
+                                 5                                  5 
+                          bathroom                              baton 
+                                 5                                  5 
+                             battl                            baurber 
+                                 5                                  5 
+                           bayonet                              beach 
+                                 5                                  5 
+                              bear                     bearablebrbrth 
+                                 5                                  5 
+                              beat                             beaten 
+                                 5                                  5 
+                             beati                           beatspan 
+                                 5                                  5 
+                            beauti                   beautifullycraft 
+                                 4                                  5 
+                     beautifullyso                      beautifulspan 
+                                 5                                  5 
+                    beautifultspan                            beautya 
+                                 5                                  5 
+                        beautyspan                          beautyâ€™ 
+                                 5                                  5 
+                        bebrbrgood                              becam 
+                                 5                                  1 
+                        becamespan                              becau 
+                                 5                                  5 
+                             becom                       becomingspan 
+                                 1                                  5 
+                           becould                                bed 
+                                 5                                  5 
+                         bedridden                             bedtim 
+                                 5                                  5 
+                       bedtimespan                               beef 
+                                 5                                  5 
+                             befal                  beforeamazingspan 
+                                 5                                  5 
+                        beforespan                           befriend 
+                                 5                                  5 
+                           befuddl                                beg 
+                                 5                                  5 
+                             began                          beganspan 
+                                 7                                  5 
+                             begat                              begin 
+                                 5                                  1 
+                          beginnig                       beginningbri 
+                                 5                                  5 
+                     beginningspan                           begotten 
+                                 5                                  5 
+                           begrudg                              begun 
+                                 5                                  5 
+                             behav                           behavior 
+                                 5                                  7 
+                      behaviorspan                          behaviour 
+                                 5                                  5 
+                            behead                             behind 
+                                 5                                  5 
+                        behindspan                       beholderspan 
+                                 5                                  5 
+                         beingspan                            belabor 
+                                 5                                  5 
+                     belaboredspan                             beleiv 
+                                 5                                  5 
+                           belgium                             belief 
+                                 5                                  5 
+                            believ                  believabilityspan 
+                                 1                                  5 
+              believablebrsomewhat                     believablespan 
+                                 5                                  5 
+                      believetspan                               bell 
+                                 5                                  5 
+                             belli                             belong 
+                                 5                                  5 
+                        belongspan                              belov 
+                                 5                                  5 
+                    belowbrbrfirst                          belownorm 
+                                 5                                  5 
+                          beltless                              bemus 
+                                 5                                  5 
+                              bend                             bender 
+                                 5                                  5 
+                           beneath                        beneficiari 
+                                 5                                  5 
+                           benefit                            benevol 
+                                 5                                  5 
+                           benfici                             benign 
+                                 5                                  5 
+                        bennington                               bent 
+                                 5                                  5 
+                            benumb                           bequeath 
+                                 5                                  5 
+                             berat                             bereft 
+                                 5                                  5 
+                             besid                               beso 
+                                 5                                  5 
+                            bespan                               best 
+                                 5                                  3 
+                          bestabus                        bestbrbrsel 
+                                 5                                  5 
+                           bestsel                     bestsellerbron 
+                                 5                                  5 
+                    bestsellerspan                    bestsellertspan 
+                                 5                                  5 
+                          bestspan                          besttspan 
+                                 5                                  5 
+                               bet                          betayspan 
+                                 5                                  5 
+                            betond                             betray 
+                                 5                                  5 
+                     betrayedtspan                            betroth 
+                                 5                                  5 
+                            better                            bettera 
+                                 1                                  5 
+                         betterbri                       betterbrther 
+                                 5                                  5 
+                        betterspan                        bettertspan 
+                                 5                                  5 
+                    betterwhamspan                       betweenbrbrm 
+                                 5                                  5 
+                       betweenspan                             bewild 
+                                 5                                  5 
+                           bewitch                             beyond 
+                                 5                                  7 
+                      beyondbrbrth                         beyondspan 
+                                 5                                  5 
+                              bibl                                big 
+                                 5                                  7 
+                           biggest                             bigtim 
+                                 5                                  5 
+                     bildungsroman                 bildungsromantspan 
+                                 5                                  5 
+                         bilgespan                               bill 
+                                 5                                  5 
+                              bind                               bing 
+                                 5                                  5 
+                        bingedrink                         bingesspan 
+                                 5                                  5 
+                          biograph                          biographi 
+                                 5                                  5 
+                              bird                          birdbrbri 
+                                 7                                  5 
+                          birdspan                          birdtspan 
+                                 5                                  5 
+                          birthday                                bit 
+                                 5                                  3 
+                         bitbrbori                             bitbut 
+                                 5                                  5 
+                             bitch                               bite 
+                                 5                                  5 
+                           bitmayb                            bitspan 
+                                 5                                  5 
+                            bitten                             bitter 
+                                 5                                  5 
+                       bittersweet                             bizarr 
+                                 5                                  5 
+                               bla                              black 
+                                 5                                  5 
+                          blackwel                               blah 
+                                 5                                  5 
+                          blahspan                          blahtspan 
+                                 5                                  5 
+                             blame                            blanket 
+                                 5                                  5 
+                             blase                            blaspan 
+                                 5                                  5 
+                         blasphemi                              blast 
+                                 5                                  5 
+                           blatant                            blather 
+                                 5                                  5 
+                             bleak                          bleakspan 
+                                 5                                  5 
+                             bleed                              blend 
+                                 5                                  5 
+                             bless                            blether 
+                                 5                                  5 
+                              blew                      blightedtspan 
+                                 5                                  5 
+                             blind                              blink 
+                                 5                                  5 
+                             bliss                              blith 
+                                 5                                  5 
+                             bloat                               blob 
+                                 5                                  5 
+                             blood                               blow 
+                                 5                                  5 
+                             blown                           bludgeon 
+                                 5                                  5 
+                              blue                          bluetooth 
+                                 5                                  5 
+                             blunt                               blur 
+                                 5                                  5 
+                             blurb bluuuuuuuuurrrrrgufpaufppppppasdfj 
+                                 5                                  5 
+                             board                               boat 
+                                 5                                  5 
+                               bob                                bod 
+                                 5                                  5 
+                              bodi                                bog 
+                                 5                                  7 
+                             boggi                               boil 
+                                 5                                  5 
+                             boioz                               bold 
+                                 5                                  5 
+                            bolder                           boltedon 
+                                 5                                  5 
+                              bomb                            bonafid 
+                                 7                                  5 
+                              bond                               bone 
+                                 5                                  5 
+                          bonespan                             bonfir 
+                                 5                                  5 
+                             bonus                           boodspan 
+                                 5                                  5 
+                              book                           bookahol 
+                                 6                                  5 
+                          bookalso                            bookand 
+                                 5                                  5 
+                            bookat                             bookbr 
+                                 5                                  5 
+                      bookbrbecaus                      bookbrbrabout 
+                                 5                                  5 
+                       bookbrbrand                      bookbrbrdonna 
+                                 5                                  5 
+                       bookbrbrgiv                          bookbrbri 
+                                 5                                  5 
+                        bookbrbrit                         bookbrbrth 
+                                 5                                  5 
+                       bookbrdonna                            bookbri 
+                                 5                                  5 
+                        bookbrmayb                          bookbrnot 
+                                 5                                  5 
+                       bookbrperil                         bookbrreal 
+                                 5                                  5 
+                      bookbrsandra                       bookbrsomeon 
+                                 5                                  5 
+                          bookclub                        bookdiscuss 
+                                 5                                  5 
+                           bookfor                              booki 
+                                 5                                  5 
+                            bookin                       bookinterest 
+                                 5                                  5 
+                          bookjust                           booklist 
+                                 5                                  5 
+                          bookmark                            booknot 
+                                 5                                  5 
+                        bookperhap                         bookreview 
+                                 5                                  5 
+                        booksbrbri                           booksbri 
+                                 5                                  5 
+                         booksmovi                            booksno 
+                                 5                                  5 
+                            bookso                           bookspan 
+                                 5                                  3 
+                     bookspellbind                        booksremind 
+                                 5                                  5 
+                      bookssometim                          booksspan 
+                                 5                                  7 
+                        bookstspan                            bookthi 
+                                 5                                  5 
+                           booktoo                         booktroubl 
+                                 5                                  5 
+                         booktspan                           bookwast 
+                                 7                                  5 
+                           bookwel                             bookâ€ 
+                                 5                                  5 
+                              boom                           bootspan 
+                                 5                                  5 
+                              booz                             border 
+                                 5                                  5 
+                         borderlin                               bore 
+                                 5                                  3 
+                           boredom                          boredspan 
+                                 5                                  5 
+                     boreunsatisfi                               borg 
+                                 5                                  5 
+                              bori                            boringi 
+                                 3                                  5 
+                          boringit                          boringmor 
+                                 5                                  5 
+                        boringskip                         boringspan 
+                                 5                                  5 
+                       boringtspan                    borisbralthough 
+                                 5                                  5 
+                         borisbrif                          borisbrit 
+                                 5                                  5 
+                            boriss                          borisspan 
+                                 5                                  5 
+                          borisâ€™                               born 
+                                 5                                  5 
+                             borri                             borrow 
+                                 5                                  5 
+                    borrowedbrfrom                               boss 
+                                 5                                  5 
+                            boston                                bot 
+                                 5                                  5 
+                            bother                         botherspan 
+                                 7                                  5 
+                         bothtspan                              bottl 
+                                 5                                  5 
+                            bottom                             bought 
+                                 5                                  7 
+                             bounc                             bounci 
+                                 5                                  5 
+                             bound                           boundari 
+                                 5                                  5 
+                           bouquet                               bout 
+                                 5                                  5 
+                               bow                                box 
+                                 5                                  5 
+                               boy                            boyhood 
+                                 3                                  5 
+                       boyhoodspan                             boyish 
+                                 5                                  5 
+                            boyman                            boysguy 
+                                 5                                  5 
+                        boysimprob                            boyspan 
+                                 5                                  5 
+                         boystspan                             boyâ€™ 
+                                 5                                  5 
+                               boz                              brace 
+                                 5                                  5 
+                             brain                          brainspan 
+                                 5                                  5 
+                             brake                              brand 
+                                 5                                  5 
+                             brave                            braveri 
+                                 5                                  5 
+                             bravo                          bravospan 
+                                 5                                  5 
+                         brbarbara                           brbrfive 
+                                 5                                  5 
+                            brbrin                            brbrthe 
+                                 5                                  5 
+                           brbrwas                              brbut 
+                                 5                                  5 
+                         brdonâ€™t                             breach 
+                                 5                                  5 
+                           breadth                              break 
+                                 5                                  7 
+                         breakfast                          breakneck 
+                                 5                                  5 
+                        breaksspan                             breath 
+                                 5                                  5 
+                     breathbrhowev                       breathedthey 
+                                 5                                  5 
+                        breathless                     breathlessspan 
+                                 5                                  5 
+                         breathtak                               bred 
+                                 5                                  5 
+                             breez                             breezi 
+                                 5                                  5 
+                             brett                             breven 
+                                 5                                  5 
+                           breviti                            brhowev 
+                                 5                                  5 
+                               bri                     brickmeierspan 
+                                 5                                  5 
+                             bride                              bridg 
+                                 5                                  5 
+                             brief                            briefer 
+                                 5                                  5 
+                           briefli                          briefspan 
+                                 5                                  5 
+                              brif                             bright 
+                                 5                                  5 
+                          brighter                           brillant 
+                                 5                                  5 
+                         brillianc                     brilliancespan 
+                                 5                                  5 
+                         brilliant                      brilliantspan 
+                                 1                                  5 
+                    brillianttspan                              bring 
+                                 5                                  7 
+                         bringspan                              brink 
+                                 5                                  5 
+             brjanecaseyhughesspan                             brmani 
+                                 5                                  5 
+                              brms                            broader 
+                                 5                                  5 
+                             broke                             broken 
+                                 5                                  5 
+                       brokenheart                            bromanc 
+                                 5                                  5 
+                             brood                            brother 
+                                 5                                  5 
+                           brought                         browbeaten 
+                                 7                                  5 
+                             brown                        browsedspan 
+                                 5                                  5 
+                            brpain                            brpleas 
+                                 5                                  5 
+                            brspan                              brthe 
+                                 5                                  5 
+                           brthere                             brthis 
+                                 5                                  5 
+                             brush                             brutal 
+                                 5                                  5 
+                             brutl                             brveri 
+                                 5                                  5 
+                             bsorb                                btw 
+                                 5                                  5 
+                             bubbl                               buck 
+                                 5                                  5 
+                       buddiesspan                             budget 
+                                 5                                  5 
+                           buffthi                              build 
+                                 5                                  7 
+                           builder                         buildsspan 
+                                 5                                  5 
+                             built                               bulk 
+                                 5                                  5 
+                             bulki                             bummer 
+                                 5                                  5 
+ [ reached getOption("max.print") -- omitted 19008 entries ]
+
+Available components:
+[1] "centers"     "size"        "cluster"     "membership"  "iter"        "withinerror"
+[7] "call"       
+> s3d <- scatterplot3d(result$membership, color = result$cluster, type = "h", angle = 55, scale.y = 0.7, pch = 16, main = "Pertinence")
+> plot(m, col=result$cluster)
+> 

@@ -1,0 +1,661 @@
+library(tm) #Text Mining Package
+> library(readr)
+> Andy_Weir_The_Martian <- read_csv("~/Masters Projet/Amazon-book reviews/Andy-Weir-The-Martian.csv", 
++                                        col_names = FALSE)
+Parsed with column specification:
+cols(
+  .default = col_character()
+)
+
+> ## Amazon Review Dataset File 1
+> length(Andy_Weir_The_Martian)
+[1] 32
+> head(Andy_Weir_The_Martian)
+# A tibble: 6 x 32
+                                                                                             X1
+                                                                                          <chr>
+1 "4.0\t/gp/customer-reviews/RKMO449VT48H3?ASIN=1491590173\t4.7573214851 Stars\t\"<span class=\
+2 "3.0\t/gp/customer-reviews/R3RDNZNCOMRN0K?ASIN=1491590173\tWho needs nail clippers?\t\"<span 
+3 "4.0\t/gp/customer-reviews/R1TC15NPCF9GMW?ASIN=1491590173\tAbandoned on Mars\t\"<span class=\
+4 "5.0\t/gp/customer-reviews/RT3R8XN5KZZGW?ASIN=1491590173\tExcellent Story\t\"<span class=\"\"
+5                         "5.0\t/gp/customer-reviews/R32NNLGY7QGRVJ?ASIN=1491590173\tInventive"
+6 "5.0\t/gp/customer-reviews/R14NNZV8RFYM5K?ASIN=1491590173\tCool science and tech...but no lif
+# ... with 31 more variables: X2 <chr>, X3 <chr>, X4 <chr>, X5 <chr>, X6 <chr>, X7 <chr>,
+#   X8 <chr>, X9 <chr>, X10 <chr>, X11 <chr>, X12 <chr>, X13 <chr>, X14 <chr>, X15 <chr>,
+#   X16 <chr>, X17 <chr>, X18 <chr>, X19 <chr>, X20 <chr>, X21 <chr>, X22 <chr>, X23 <chr>,
+#   X24 <chr>, X25 <chr>, X26 <chr>, X27 <chr>, X28 <chr>, X29 <chr>, X30 <chr>, X31 <chr>,
+#   X32 <chr>
+> tail(Andy_Weir_The_Martian)
+# A tibble: 6 x 32
+                                                                                             X1
+                                                                                          <chr>
+1 "1.0\t/gp/customer-reviews/R304APY91NFLVR?ASIN=1491590173\tDribble\t\"<span class=\"\"a-size-
+2 "1.0\t/gp/customer-reviews/RKAG0L0U4N8H2?ASIN=1491590173\tThe Martian\t\"<span class=\"\"a-si
+3 "1.0\t/gp/customer-reviews/R2WF1T54DMNRG4?ASIN=1491590173\tGreat on every level\t\"<span clas
+4 "1.0\t/gp/customer-reviews/RZID1PVAWCC94?ASIN=1491590173\tLong slow and to technical\t\"<span
+5 "1.0\t/gp/customer-reviews/R1YNEKQOWDZ7JJ?ASIN=1491590173\tNot realistic at all...no actual M
+6 "1.0\t/gp/customer-reviews/RPB07ZPSKP516?ASIN=1491590173\t\"Too much \"\"R\"\" language\"\t\"
+# ... with 31 more variables: X2 <chr>, X3 <chr>, X4 <chr>, X5 <chr>, X6 <chr>, X7 <chr>,
+#   X8 <chr>, X9 <chr>, X10 <chr>, X11 <chr>, X12 <chr>, X13 <chr>, X14 <chr>, X15 <chr>,
+#   X16 <chr>, X17 <chr>, X18 <chr>, X19 <chr>, X20 <chr>, X21 <chr>, X22 <chr>, X23 <chr>,
+#   X24 <chr>, X25 <chr>, X26 <chr>, X27 <chr>, X28 <chr>, X29 <chr>, X30 <chr>, X31 <chr>,
+#   X32 <chr>
+> Andy = Andy_Weir_The_Martian[-(1:2)]
+> Andy= Andy[-(30:length(Andy))]
+> 
+> length(Andy)
+[1] 29
+> 
+> doc.vec <- VectorSource(Andy) # Construct a Source of Vector as input
+> doc.corpus <- Corpus(doc.vec) # Corpus- Function for Natural Language document
+> summary(doc.corpus)
+   Length Class             Mode
+1  2      PlainTextDocument list
+2  2      PlainTextDocument list
+3  2      PlainTextDocument list
+4  2      PlainTextDocument list
+5  2      PlainTextDocument list
+6  2      PlainTextDocument list
+7  2      PlainTextDocument list
+8  2      PlainTextDocument list
+9  2      PlainTextDocument list
+10 2      PlainTextDocument list
+11 2      PlainTextDocument list
+12 2      PlainTextDocument list
+13 2      PlainTextDocument list
+14 2      PlainTextDocument list
+15 2      PlainTextDocument list
+16 2      PlainTextDocument list
+17 2      PlainTextDocument list
+18 2      PlainTextDocument list
+19 2      PlainTextDocument list
+20 2      PlainTextDocument list
+21 2      PlainTextDocument list
+22 2      PlainTextDocument list
+23 2      PlainTextDocument list
+24 2      PlainTextDocument list
+25 2      PlainTextDocument list
+26 2      PlainTextDocument list
+27 2      PlainTextDocument list
+28 2      PlainTextDocument list
+29 2      PlainTextDocument list
+> #tm_map: function for transformation of document
+> doc.corpus <- tm_map(doc.corpus, content_transformer(tolower))
+> doc.corpus <- tm_map(doc.corpus,removePunctuation)
+> doc.corpus <- tm_map(doc.corpus, removeNumbers)
+> doc.corpus <- tm_map(doc.corpus, removeWords, stopwords("english"))
+> 
+> library(SnowballC) #Comparison of Vocabulary
+> doc.corpus <- tm_map(doc.corpus, stemDocument)
+> doc.corpus <- tm_map(doc.corpus, stripWhitespace)
+> inspect(doc.corpus[8])
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] cthe martianbrbrth main charact one book remain embed memori simpli terrif way back much younger perhap impression arthur c clarkes classalinknorm hrefrendezvouswithramadprendezv ramaa film na given book appeal primarili technic side b sicfi review larg pretti critic lot interestingspan seem hed someth interest relat instead excit finish well written na na na equal part introspect cosmic pilgrimag humor wit good exampl mark realiz grow potato met requir colon mar take mayb worth star alon call uberengin problemsolv technolog puzzl surviv narrat structur creat problem puzzl solv order hero surviv hero solv gratifi fun hope god strand mar na theme exact one expect look cover man trap space communic must face imposs circumst find way back earth cliché genr na forc abandon nasa team tri figur get watney home realiz hes still aliv water na na na didnt think lay rock spell sos martian surfac zero charact develop watney attitud write style seem day day na glad overlook order experi relat ... <truncated>
+> inspect(doc.corpus[8])
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] cthe martianbrbrth main charact one book remain embed memori simpli terrif way back much younger perhap impression arthur c clarkes classalinknorm hrefrendezvouswithramadprendezv ramaa film na given book appeal primarili technic side b sicfi review larg pretti critic lot interestingspan seem hed someth interest relat instead excit finish well written na na na equal part introspect cosmic pilgrimag humor wit good exampl mark realiz grow potato met requir colon mar take mayb worth star alon call uberengin problemsolv technolog puzzl surviv narrat structur creat problem puzzl solv order hero surviv hero solv gratifi fun hope god strand mar na theme exact one expect look cover man trap space communic must face imposs circumst find way back earth cliché genr na forc abandon nasa team tri figur get watney home realiz hes still aliv water na na na didnt think lay rock spell sos martian surfac zero charact develop watney attitud write style seem day day na glad overlook order experi relat ... <truncated>
+> TDM <- TermDocumentMatrix(doc.corpus) # row: terms(words) column: document(webpages)
+> TDM
+<<TermDocumentMatrix (terms: 17885, documents: 29)>>
+Non-/sparse entries: 59892/458773
+Sparsity           : 88%
+Maximal term length: 83
+Weighting          : term frequency (tf)
+> inspect(TDM[1:10,1:10])
+<<TermDocumentMatrix (terms: 10, documents: 10)>>
+Non-/sparse entries: 57/43
+Sparsity           : 43%
+Maximal term length: 13
+Weighting          : term frequency (tf)
+Sample             :
+               Docs
+Terms            1 10  2  3  4  5  6 7 8 9
+  abandon       32  2 16 21  8  3  9 7 4 2
+  abbrevi        1  0  0  0  0  0  0 0 0 0
+  abil          24  3 14 11  7 11  6 4 1 2
+  abl           54  6 37 23 15  9 13 5 4 7
+  aboard         1  0  2  0  1  0  1 0 0 0
+  abort         17  1 11  7  3  3  4 5 0 1
+  abortedbrbrth  1  0  0  0  0  0  0 0 0 0
+  abound         2  0  2  1  0  0  1 1 0 0
+  abovebrbri     1  0  0  0  0  0  0 0 0 0
+  abrupt         7  0  8  5  3  0  3 2 0 0
+> DTM <- DocumentTermMatrix(doc.corpus) # row: document(webpages) column: terms(words)
+> inspect(DTM[1:10,1:10])
+<<DocumentTermMatrix (documents: 10, terms: 10)>>
+Non-/sparse entries: 57/43
+Sparsity           : 43%
+Maximal term length: 13
+Weighting          : term frequency (tf)
+Sample             :
+    Terms
+Docs abandon abbrevi abil abl aboard abort abortedbrbrth abound abovebrbri abrupt
+  1       32       1   24  54      1    17             1      2          1      7
+  10       2       0    3   6      0     1             0      0          0      0
+  2       16       0   14  37      2    11             0      2          0      8
+  3       21       0   11  23      0     7             0      1          0      5
+  4        8       0    7  15      1     3             0      0          0      3
+  5        3       0   11   9      0     3             0      0          0      0
+  6        9       0    6  13      1     4             0      1          0      3
+  7        7       0    4   5      0     5             0      1          0      2
+  8        4       0    1   4      0     0             0      0          0      0
+  9        2       0    2   7      0     1             0      0          0      0
+> findFreqTerms(TDM,1500)  #each of this words occurred more than 1500 times
+ [1] "book"    "charact" "get"     "great"   "just"    "like"    "make"    "mar"    
+ [9] "mark"    "one"     "read"    "scienc"  "stori"   "surviv"  "watney"  "will"   
+> findAssocs(TDM, "like", 0.7)
+$like
+          actual           author             book          charact            everi 
+            1.00             1.00             1.00             1.00             1.00 
+            just             make              mar             movi             much 
+            1.00             1.00             1.00             1.00             1.00 
+           novel          problem           realli             seem            space 
+            1.00             1.00             1.00             1.00             1.00 
+           stori             want              abl            accur         adventur 
+            1.00             1.00             0.99             0.99             0.99 
+           along             amaz            anyon          appreci           aspect 
+            0.99             0.99             0.99             0.99             0.99 
+       astronaut             away            begin           behind           believ 
+            0.99             0.99             0.99             0.99             0.99 
+            best           better              bit         bookspan              can 
+            0.99             0.99             0.99             0.99             0.99 
+            cant            coupl             dead          definit           detail 
+            0.99             0.99             0.99             0.99             0.99 
+         develop            didnt           doesnt             done             dont 
+            0.99             0.99             0.99             0.99             0.99 
+             end            enjoy             even          everyon            excel 
+            0.99             0.99             0.99             0.99             0.99 
+          expect           extrem             feel          fiction             find 
+            0.99             0.99             0.99             0.99             0.99 
+           first           follow            found              fun              get 
+            0.99             0.99             0.99             0.99             0.99 
+            give             good              got            great              guy 
+            0.99             0.99             0.99             0.99             0.99 
+          happen             hard             help             hero             high 
+            0.99             0.99             0.99             0.99             0.99 
+            hope            human            humor           ingenu         interest 
+            0.99             0.99             0.99             0.99             0.99 
+          itspan              ive             keep            kindl             know 
+            0.99             0.99             0.99             0.99             0.99 
+           laugh             left             life             line            littl 
+            0.99             0.99             0.99             0.99             0.99 
+            long             look              lot             love             made 
+            0.99             0.99             0.99             0.99             0.99 
+            main             mani             mark             math             must 
+            0.99             0.99             0.99             0.99             0.99 
+          narrat             need             nerd            never              one 
+            0.99             0.99             0.99             0.99             0.99 
+          overal             page             part           person           planet 
+            0.99             0.99             0.99             0.99             0.99 
+            plot           pretti      protagonist              put             read 
+            0.99             0.99             0.99             0.99             0.99 
+          reader             real          realist        recommend         research 
+            0.99             0.99             0.99             0.99             0.99 
+          review            right         robinson             root              sci 
+            0.99             0.99             0.99             0.99             0.99 
+          scienc         scientif            scifi              see           situat 
+            0.99             0.99             0.99             0.99             0.99 
+           solut             solv           someon             star            still 
+            0.99             0.99             0.99             0.99             0.99 
+           storm           strand            stuff           surviv        technolog 
+            0.99             0.99             0.99             0.99             0.99 
+            that            thing            think         thorough          thought 
+            0.99             0.99             0.99             0.99             0.99 
+            time             told             took            total              tri 
+            0.99             0.99             0.99             0.99             0.99 
+      understand              use             wait              way             weir 
+            0.99             0.99             0.99             0.99             0.99 
+            well            whole             will          without           wonder 
+            0.99             0.99             0.99             0.99             0.99 
+            wont            write          written             your          absolut 
+            0.99             0.99             0.99             0.99             0.98 
+           accid           action           almost             also              amp 
+            0.98             0.98             0.98             0.98             0.98 
+            andi           apollo           appeal         approach           around 
+            0.98             0.98             0.98             0.98             0.98 
+          attent            audio           balanc             base            basic 
+            0.98             0.98             0.98             0.98             0.98 
+          bottom              buy             care         challeng          chapter 
+            0.98             0.98             0.98             0.98             0.98 
+           clear             come           compel           consid             cool 
+            0.98             0.98             0.98             0.98             0.98 
+         couldnt          creativ          current              day            depth 
+            0.98             0.98             0.98             0.98             0.98 
+         describ         descript           differ       disappoint         donespan 
+            0.98             0.98             0.98             0.98             0.98 
+           earth             easi              edg           effect            engag 
+            0.98             0.98             0.98             0.98             0.98 
+           engin           enough        entertain           especi            event 
+            0.98             0.98             0.98             0.98             0.98 
+            ever          everyth           except            excit              fan 
+            0.98             0.98             0.98             0.98             0.98 
+          fascin             felt           finish          forward            futur 
+            0.98             0.98             0.98             0.98             0.98 
+            geek            geeki             glad          graviti             grip 
+            0.98             0.98             0.98             0.98             0.98 
+          hilari             hold           hostil            howev          husband 
+            0.98             0.98             0.98             0.98             0.98 
+            idea           imposs          impress             isnt              job 
+            0.98             0.98             0.98             0.98             0.98 
+            kept             last             less            level             lost 
+            0.98             0.98             0.98             0.98             0.98 
+             man             matt           matter              may             mind 
+            0.98             0.98             0.98             0.98             0.98 
+         mission        moviespan             next             noth        novelspan 
+            0.98             0.98             0.98             0.98             0.98 
+             now          obvious             past            peopl          perfect 
+            0.98             0.98             0.98             0.98             0.98 
+          physic         plausibl          possibl             quit         readspan 
+            0.98             0.98             0.98             0.98             0.98 
+          reason  recommendedspan    recommendspan          resourc             said 
+            0.98             0.98             0.98             0.98             0.98 
+     sciencespan        scientist             seat           second             sens 
+            0.98             0.98             0.98             0.98             0.98 
+         serious              set            short             sinc            skill 
+            0.98             0.98             0.98             0.98             0.98 
+            slow            smart           someth             span            start 
+            0.98             0.98             0.98             0.98             0.98 
+            stay        storyspan            style          surpris          suspens 
+            0.98             0.98             0.98             0.98             0.98 
+            take          technic             tell            thank           though 
+            0.98             0.98             0.98             0.98             0.98 
+          thrill       throughout           travel             true             turn 
+            0.98             0.98             0.98             0.98             0.98 
+             two           watney             went            witti             work 
+            0.98             0.98             0.98             0.98             0.98 
+           worth           writer             year             abil            abort 
+            0.98             0.98             0.98             0.97             0.97 
+             add    adventurespan             alon          alreadi         although 
+            0.97             0.97             0.97             0.97             0.97 
+           anoth            anyth       authorspan           awesom             back 
+            0.97             0.97             0.97             0.97             0.97 
+      background           beyond           bought            brain           calcul 
+            0.97             0.97             0.97             0.97             0.97 
+          captiv           captur             cent          certain        chemistri 
+            0.97             0.97             0.97             0.97             0.97 
+          clever           combin          complex         constant          continu 
+            0.97             0.97             0.97             0.97             0.97 
+           craft            creat              cri            cross            cruso 
+            0.97             0.97             0.97             0.97             0.97 
+           damon             dark              die         downspan            drama 
+            0.97             0.97             0.97             0.97             0.97 
+           earli              els             emot            entir          environ 
+            0.97             0.97             0.97             0.97             0.97 
+          eventu           explor              eye             face          fantast 
+            0.97             0.97             0.97             0.97             0.97 
+             far          favorit            fight            final             flow 
+            0.97             0.97             0.97             0.97             0.97 
+            forc           friend             full            funni           genius 
+            0.97             0.97             0.97             0.97             0.97 
+        goodspan             grim            handl             hell             hour 
+            0.97             0.97             0.97             0.97             0.97 
+          humour              ill           imagin           incred           inform 
+            0.97             0.97             0.97             0.97             0.97 
+         insight           jargon              joy         knowledg          languag 
+            0.97             0.97             0.97             0.97             0.97 
+            late            learn         lifespan            light             live 
+            0.97             0.97             0.97             0.97             0.97 
+             log             mayb           mespan            meter            might 
+            0.97             0.97             0.97             0.97             0.97 
+            move             nasa            nerdi              new              odd 
+            0.97             0.97             0.97             0.97             0.97 
+             old            order        overwhelm             pace            point 
+            0.97             0.97             0.97             0.97             0.97 
+          premis            quick           requir              run              say 
+            0.97             0.97             0.97             0.97             0.97 
+           sever             skip            sleep         somewhat           spirit 
+            0.97             0.97             0.97             0.97             0.97 
+          stimul             stop             tale             tech             tens 
+            0.97             0.97             0.97             0.97             0.97 
+            term              top            truli            unlik          version 
+            0.97             0.97             0.97             0.97             0.97 
+            what              wit              yes              yet          abandon 
+            0.97             0.97             0.97             0.97             0.96 
+             age           amount            becom              big              bog 
+            0.96             0.96             0.96             0.96             0.96 
+            bore        brilliant            check            cheer          classic 
+            0.96             0.96             0.96             0.96             0.96 
+      comparison          complet             deal           despit           dialog 
+            0.96             0.96             0.96             0.96             0.96 
+       difficult disappointedspan             dust             educ          endspan 
+            0.96             0.96             0.96             0.96             0.96 
+       enjoyspan           explan             fact             fast            figur 
+            0.96             0.96             0.96             0.96             0.96 
+            film             food              goe           ground             head 
+            0.96             0.96             0.96             0.96             0.96 
+            held           involv          journal              kid             knew 
+            0.96             0.96             0.96             0.96             0.96 
+            land           layman             lead              let            limit 
+            0.96             0.96             0.96             0.96             0.96 
+           liter             loud           macgyv         marsspan          martian 
+            0.96             0.96             0.96             0.96             0.96 
+            meet           moment          nailbit            natur             near 
+            0.96             0.96             0.96             0.96             0.96 
+          normal            other          overcom       particular         persever 
+            0.96             0.96             0.96             0.96             0.96 
+        perspect            place            polit             poor            posit 
+            0.96             0.96             0.96             0.96             0.96 
+         potenti          preview          program          purchas           realiz 
+            0.96             0.96             0.96             0.96             0.96 
+           relat           remind             ride          sarcasm          sarcast 
+            0.96             0.96             0.96             0.96             0.96 
+            save              saw           school            share            simpl 
+            0.96             0.96             0.96             0.96             0.96 
+           solid          somehow          sometim             sort            spoil 
+            0.96             0.96             0.96             0.96             0.96 
+         spoiler         storylin             sure          tedious          tension 
+            0.96             0.96             0.96             0.96             0.96 
+           there        therespan           thrown             till            today 
+            0.96             0.96             0.96             0.96             0.96 
+          turner            twist             type            usual             view 
+            0.96             0.96             0.96             0.96             0.96 
+           wasnt             wish             word            wrong           absorb 
+            0.96             0.96             0.96             0.96             0.95 
+          across           adject            admit              air            alien 
+            0.95             0.95             0.95             0.95             0.95 
+           alway            appar            arent           asimov       betterspan 
+            0.95             0.95             0.95             0.95             0.95 
+           break            bring             case         castaway            chang 
+            0.95             0.95             0.95             0.95             0.95 
+          compar            deliv         determin          detract           dramat 
+            0.95             0.95             0.95             0.95             0.95 
+             dri            drive           easili       enoughspan          enthral 
+            0.95             0.95             0.95             0.95             0.95 
+           entri            exist            extra          fantasi            favor 
+            0.95             0.95             0.95             0.95             0.95 
+      finishspan              fit             form          funspan             gave 
+            0.95             0.95             0.95             0.95             0.95 
+            genr              glu            grain            guess             hear 
+            0.95             0.95             0.95             0.95             0.95 
+           heavi              hit           honest             hook             huge 
+            0.95             0.95             0.95             0.95             0.95 
+  impressivespan           includ          indomit            injur           inspir 
+            0.95             0.95             0.95             0.95             0.95 
+         instead         intellig          intrigu             kind            kinda 
+            0.95             0.95             0.95             0.95             0.95 
+            lack              lay            least          likeabl             lone 
+            0.95             0.95             0.95             0.95             0.95 
+          longer              low            manag           master           modern 
+            0.95             0.95             0.95             0.95             0.95 
+       necessari            night            often           ordeal         pagespan 
+            0.95             0.95             0.95             0.95             0.95 
+       paragraph             pick             piqu            pleas             plus 
+            0.95             0.95             0.95             0.95             0.95 
+          presum          probabl           provok           rather          realiti 
+            0.95             0.95             0.95             0.95             0.95 
+             red           regret            rescu             rest            rivet 
+            0.95             0.95             0.95             0.95             0.95 
+         scienci         seatspan              sex          shortag           simpli 
+            0.95             0.95             0.95             0.95             0.95 
+             sit             skim         soonspan            sound            spend 
+            0.95             0.95             0.95             0.95             0.95 
+         stretch          struggl      survivespan             talk            theme 
+            0.95             0.95             0.95             0.95             0.95 
+        thisspan         timespan           togeth            typic            ultim 
+            0.95             0.95             0.95             0.95             0.95 
+            voic             walk          wayspan         weirspan          whatney 
+            0.95             0.95             0.95             0.95             0.95 
+            wife        wisecrack           within      writtenspan           access 
+            0.95             0.95             0.95             0.95             0.94 
+        accident            ahead             amus         andyspan      anotherspan 
+            0.94             0.94             0.94             0.94             0.94 
+           assum              bad            becam            began           bother 
+            0.94             0.94             0.94             0.94             0.94 
+            cast            choic            close             crap            crisi 
+            0.94             0.94             0.94             0.94             0.94 
+          disast        disbelief         distract             dork             drew 
+            0.94             0.94             0.94             0.94             0.94 
+          effort           either         encourag            equip            escap 
+            0.94             0.94             0.94             0.94             0.94 
+           evacu         everspan           experi          explain          express 
+            0.94             0.94             0.94             0.94             0.94 
+            fair           famili      fictionspan             fill            forth 
+            0.94             0.94             0.94             0.94             0.94 
+      futurespan             game           genuin            given             grab 
+            0.94             0.94             0.94             0.94             0.94 
+            hand             hate           havent         heinlein              hes 
+            0.94             0.94             0.94             0.94             0.94 
+       hollywood          honesti        humorspan            ignor  imaginationspan 
+            0.94             0.94             0.94             0.94             0.94 
+           innov       insurmount           intens             leav           listen 
+            0.94             0.94             0.94             0.94             0.94 
+           major         mathemat          mcgiver          mcgyver             mean 
+            0.94             0.94             0.94             0.94             0.94 
+          member           method            middl             most              non 
+            0.94             0.94             0.94             0.94             0.94 
+         nonfict             open           outcom          outspan         pageturn 
+            0.94             0.94             0.94             0.94             0.94 
+     perfectspan           perhap          predict          proceed            refer 
+            0.94             0.94             0.94             0.94             0.94 
+         respect           return           ridley             sand          satisfi 
+            0.94             0.94             0.94             0.94             0.94 
+           scari         scenario            scott          sentenc             seri 
+            0.94             0.94             0.94             0.94             0.94 
+            show             side           slight            smile            spent 
+            0.94             0.94             0.94             0.94             0.94 
+         stellar           strive            stuck          suggest         superior 
+            0.94             0.94             0.94             0.94             0.94 
+         support     suspensespan           terrif         thatspan      throughspan 
+            0.94             0.94             0.94             0.94             0.94 
+       timesspan            touch          triumph           troubl         unbeliev 
+            0.94             0.94             0.94             0.94             0.94 
+            warn          weekend             wise            world            youll 
+            0.94             0.94             0.94             0.94             0.94 
+           young          youspan            adult           afraid        againspan 
+            0.94             0.94             0.93             0.93             0.93 
+             ask          attempt           audibl          authent           averag 
+            0.93             0.93             0.93             0.93             0.93 
+           awhil           beauti              bed             beer   believablespan 
+            0.93             0.93             0.93             0.93             0.93 
+           blown         botanist              box             call             came 
+            0.93             0.93             0.93             0.93             0.93 
+        circumst            clark   compellingspan          concept          contain 
+            0.93             0.93             0.93             0.93             0.93 
+          convey          convinc            cover          credibl            daili 
+            0.93             0.93             0.93             0.93             0.93 
+          danger           deserv            devis       difficulti             doom 
+            0.93             0.93             0.93             0.93             0.93 
+           drone          encount          exclaim          factual           failur 
+            0.93             0.93             0.93             0.93             0.93 
+            firm             gasp             gift         glorious             half 
+            0.93             0.93             0.93             0.93             0.93 
+           happi             heck             home           immens            inner 
+            0.93             0.93             0.93             0.93             0.93 
+          invent             issu            later         linespan             list 
+            0.93             0.93             0.93             0.93             0.93 
+       literatur            logic          macguyv            magic           marvel 
+            0.93             0.93             0.93             0.93             0.93 
+           minut             miss              mix         morespan         nonengin 
+            0.93             0.93             0.93             0.93             0.93 
+         nowspan           number          opposit           option         otherwis 
+            0.93             0.93             0.93             0.93             0.93 
+ outstandingspan             pack             pass           pictur             plan 
+            0.93             0.93             0.93             0.93             0.93 
+         pleasur           plenti         plotspan           polish           potato 
+            0.93             0.93             0.93             0.93             0.93 
+         predica          present            price          process       profession 
+            0.93             0.93             0.93             0.93             0.93 
+            rare      readingspan            resid  reviewtextexcel        rightspan 
+            0.93             0.93             0.93             0.93             0.93 
+          romanc         sciencey             seen         smallest              son 
+            0.93             0.93             0.93             0.93             0.93 
+           stick         storytel         straight          student             suck 
+            0.93             0.93             0.93             0.93             0.93 
+          summer         survivor            techi          terribl             tire 
+            0.93             0.93             0.93             0.93             0.93 
+           token         unfortun            unusu            vacat         wellspan 
+            0.93             0.93             0.93             0.93             0.93 
+            whos            wrote         yearspan        yearsspan           abrupt 
+            0.93             0.93             0.93             0.93             0.92 
+           alert             aliv           altern           anyway          astound 
+            0.92             0.92             0.92             0.92             0.92 
+            avid            avoid              boy          brought           brutal 
+            0.92             0.92             0.92             0.92             0.92 
+           build             calm            carri        character    characterspan 
+            0.92             0.92             0.92             0.92             0.92 
+          clanci            class          confirm           confus          correct 
+            0.92             0.92             0.92             0.92             0.92 
+            crew            decad            diari         download             draw 
+            0.92             0.92             0.92             0.92             0.92 
+           drawn              due          earlier        earthspan       endingspan 
+            0.92             0.92             0.92             0.92             0.92 
+         endless          engross       enthusiast            exact           exampl 
+            0.92             0.92             0.92             0.92             0.92 
+           fabul              fix             flew           flight            focus 
+            0.92             0.92             0.92             0.92             0.92 
+            folk             free            fresh            fulli          general 
+            0.92             0.92             0.92             0.92             0.92 
+           glare        greatspan             hack          hardcor            heard 
+            0.92             0.92             0.92             0.92             0.92 
+          heroic         improvis             inde            initi             joke 
+            0.92             0.92             0.92             0.92             0.92 
+         journey           letter          librari           likabl             lose 
+            0.92             0.92             0.92             0.92             0.92 
+           lover           maroon         monologu             morn             nice 
+            0.92             0.92             0.92             0.92             0.92 
+            none             onto           overus            power      problemspan 
+            0.92             0.92             0.92             0.92             0.92 
+          profan        psycholog             pull          realism           releas 
+            0.92             0.92             0.92             0.92             0.92 
+          reread             role        secondari          shallow           snarki 
+            0.92             0.92             0.92             0.92             0.92 
+           sorri        stuffspan             tear             tend            tickl 
+            0.92             0.92             0.92             0.92             0.92 
+      travelspan             typo             upon           upspan          various 
+            0.92             0.92             0.92             0.92             0.92 
+            vern            vivid            water             week        whilespan 
+            0.92             0.92             0.92             0.92             0.92 
+          winner      writingspan          account           addict            annoy 
+            0.92             0.92             0.91             0.91             0.91 
+             art             asid        astronomi          attitud     attitudespan 
+            0.91             0.91             0.91             0.91             0.91 
+         audienc             awar            besid           biolog            blend 
+            0.91             0.91             0.91             0.91             0.91 
+          capabl           career         colleagu            crazi          crewman 
+            0.91             0.91             0.91             0.91             0.91 
+          critic            decid          delight          dialogu          discuss 
+            0.91             0.91             0.91             0.91             0.91 
+           eager             edit          element           endear         fansspan 
+            0.91             0.91             0.91             0.91             0.91 
+         fashion           filler             four            freak         funniest 
+            0.91             0.91             0.91             0.91             0.91 
+       funnyspan          generat             goal            gotta            hilar 
+            0.91             0.91             0.91             0.91             0.91 
+   hilariousspan            humbl             hype             info           ingeni 
+            0.91             0.91             0.91             0.91             0.91 
+ interestingspan           invest      justicespan             male             mood 
+            0.91             0.91             0.91             0.91             0.91 
+ [ reached getOption("max.print") -- omitted 4193 entries ]
+
+> TDM.common = removeSparseTerms(TDM,0.1) # commonly occuring terms
+> dim(TDM) # dimensions
+[1] 17885    29
+> dim(TDM.common)
+[1] 164  29
+> inspect(TDM.common[1:10,1:10])
+<<TermDocumentMatrix (terms: 10, documents: 10)>>
+Non-/sparse entries: 100/0
+Sparsity           : 0%
+Maximal term length: 9
+Weighting          : term frequency (tf)
+Sample             :
+           Docs
+Terms         1 10   2   3  4  5  6  7  8  9
+  actual    111 11  72  57 38 21 27 17 17  9
+  adventur  100  4  56  47 23 17 11  6  5 11
+  aliv       47 16  37  38 29 21  7 16 19 12
+  also      134 24 107  81 55 43 44 40 27 27
+  andi      172 12 130 103 52 66 36 18 21 13
+  anyon     108  7  64  40 32 17 11  9  8 12
+  astronaut 212 19 152 114 71 52 58 42 26 26
+  author    276 24 181 121 91 52 58 43 28 28
+  back      105 20  71  62 62 36 27 26 26 14
+  bad        41  3  26  14 14 18 17 15  6  4
+> 
+> library(slam)
+> TDM.dense <- as.matrix(TDM.common) # attempt to turn its argument into matrix
+> TDM.dense
+            Docs
+Terms           1    2   3   4   5   6   7   8   9  10  11 12 13 14 15 16 17 18 19 20 21 22
+  actual      111   72  57  38  21  27  17  17   9  11  11  8  9  6  3  3  8  5  3  3  4  1
+  adventur    100   56  47  23  17  11   6   5  11   4   5  5  2  2  5  3  2  1  2  4  0  1
+  aliv         47   37  38  29  21   7  16  19  12  16   8 10  6  7  5  3  3  3  3  2  2  2
+  also        134  107  81  55  43  44  40  27  27  24  22 17 15  9 11 17  5  8  5  7  3  3
+  andi        172  130 103  52  66  36  18  21  13  12  13 13  8  4  7  7  5  8  0  3  1  1
+  anyon       108   64  40  32  17  11   9   8  12   7   8  5  5  3  3  4  2  2  4  2  4  2
+  astronaut   212  152 114  71  52  58  42  26  26  19  16 20 10  9  7  6  4  9  3  5  6  3
+  author      276  181 121  91  52  58  43  28  28  24  25 13  9  9  6  9  8  3 11  5  2  8
+  back        105   71  62  62  36  27  26  26  14  20  12 15 13 13  8  9  7  8  4  6  4  2
+  bad          41   26  14  14  18  17  15   6   4   3   3  3  1  1  4  3  4  1  4  2  4  1
+  becom        37   37  19  15  15  10   5  10   6   4   3  5  5  5  3  4  5  5  2  2  3  3
+  behind       86   51  40  25  12  16  15  16   6   9   5  3  2  3  8  2  1  3  1  1  2  1
+  believ      192  110  86  63  22  40  27  20  11  11   7 11  4 13  7  8  4  5  5  6  4  4
+  best        145   81  58  36  28   8  14  12  14  12   9 10  4  3  3  5  0  8  3  3  3  4
+  bit         161   98  60  57  39  29  23  21  16  15  10 12  7  7  7 10  8  6  1  7  7  4
+  book       1722 1094 805 496 405 316 242 160 155 116 133 91 82 50 67 52 68 41 32 34 35 28
+  bore         59   58  28  33  12  14   7   5   5   9   2  7  4  2  4  2  2  3  3  4  2  1
+  can         286  148 136  93  82  59  34  32  25  27  31 24 21 20 21 18 19 22  6  9  9 10
+  charact     687  421 316 240 168 100  69  74  61  46  35 28 30 32 28 18 18 21 14 20 11  5
+  come        105   93  60  45  28  31  23  24  20  20  16 10 12 12  7  3  7  5  5  9  7  5
+  crew         64   61  56  31  44  28  25  16  18   6  14 14  9  2 11  6  2  3  5  7  3  3
+  day         120   86  80  41  34  22  28  17  19   7  14  7  4 11  4  4  6  5  7  3  4  2
+  detail      303  159 114  69  44  41  31  16  21  22  14 11  7  5 11 12  7  9  5  2  6  5
+  didnt       146   96  50  39  29  22  14  17  11   8  11  6  8  4  8  2  3  5  4  1  5  3
+  doesnt       77   49  42  29  21  21  13   6   8   6   9  7  1  3  7  2  3  4  2  1  1  0
+  dont        193  142  98  64  47  43  21  21  22  20  16 11  8  8 11  4  7  8  2  8  6  7
+  donâ€™t       6    5   8   6   2   6   3   1   4   5   2  4  1  6  3  3  5  5  2  2  3  3
+  earth       114   75  64  52  42  30  32  19  18  29  10 13 14 12 12  6  9  5  2  9  4  5
+  emot         54   46  29  24  26  12  11   7   9   7   6  1  3  3  6  5  2  1  3  4  1  2
+  end         206  157 113  52  53  41  29  16  17  18  16 10 10  5  6  5  8  6  4  9  8  4
+  engin       159  145  72  69  39  41  31  24  19  16  12 14  8  9 10  7  6  6  4  1  4  4
+  enjoy       409  232 139 107  56  53  41  20  29  26  20 16 20  7 13 13  7  9  6 11  8  3
+  enough      120  101  60  45  34  30  30  17  14  13  11 11  7 11  6 10  6  7  6  3  3  1
+  entri        42   30  18  16  22  12  12   9   8   4   2  2  6  2  8  4  7  6  3  2  4  5
+            Docs
+Terms        23 24 25 26 27 28 29
+  actual      2  2  7  2  0  4  0
+  adventur    1  4  1  1  2  1  0
+  aliv        3  2  6  0  2  1  1
+  also        4  3  4  2  2  3  3
+  andi        2  2  2  2  1  6  1
+  anyon       3  5  1  2  0  0  1
+  astronaut   4  3  1  2  2  4  2
+  author      8  4  3  2  3  3  3
+  back        3  4  4  1  1  1  4
+  bad         1  2  1  0  1  1  1
+  becom       2  3  3  0  0  1  2
+  behind      1  2  2  1  0  2  0
+  believ      2  1  3  3  1  2  1
+  best        1  3  1  2  1  1  1
+  bit         6  0  5  2  1  3  1
+  book       27 22 21  8  9 10 10
+  bore        1  1  0  2  1  1  1
+  can         9  6  3  4  6  3  2
+  charact     4  8  7  4 10  7  2
+  come        6  5  2  1  3  2  3
+  crew        3  3  2  4  2  2  0
+  day         1  3  1  1  2  2  0
+  detail      4  2  3  0  2  1  0
+  didnt       4  2  2  1  1  1  1
+  doesnt      0  2  2  1  1  2  2
+  dont        4  5  5  2  2  8  2
+  donâ€™t     1  2  3  2  2  2  1
+  earth       5  5  6  5  2  3  4
+  emot        1  0  1  1  0  3  2
+  end         8  2  4  4  4  3  2
+  engin       2  0  5  1  2  0  1
+  enjoy       4  3  4  1  1  4  1
+  enough      4  3  3  1  2  2  0
+  entri       3  4  2  2  1  1  0
+ [ reached getOption("max.print") -- omitted 130 rows ]
+> # Object.size provides an estimate of the memory that is being used to store an R object
+> object.size(TDM.common)
+86304 bytes
+> object.size(TDM.dense)
+49616 bytes

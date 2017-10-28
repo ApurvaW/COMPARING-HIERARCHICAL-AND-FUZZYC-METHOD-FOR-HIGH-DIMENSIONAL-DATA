@@ -1,0 +1,491 @@
+> library(cluster)
+> library(ggplot2)
+> library(factoextra)
+> library(colorspace)
+> library(dendextend)
+> library(readxl)
+> library(tm) #Text Mining Package
+> 
+> Online_Retail <- read_excel("~/Masters Projet/Online Retail/Online Retail.xlsx")
+> 
+> #Online_Retail$InvoiceDate <- as.Date(Online_Retail$InvoiceDate, format="%Y%m%d")
+> View(Online_Retail)
+> names(Online_Retail)
+[1] "InvoiceNo"   "StockCode"   "Description" "Quantity"    "InvoiceDate" "UnitPrice"  
+[7] "CustomerID"  "Country"    
+> new <- Online_Retail[-5]
+> names(new)
+[1] "InvoiceNo"   "StockCode"   "Description" "Quantity"    "UnitPrice"   "CustomerID" 
+[7] "Country"    
+> length(new)
+[1] 7
+> head(new)
+# A tibble: 6 x 7
+  InvoiceNo StockCode                         Description Quantity UnitPrice CustomerID
+      <chr>     <chr>                               <chr>    <dbl>     <dbl>      <dbl>
+1    536365    85123A  WHITE HANGING HEART T-LIGHT HOLDER        6      2.55      17850
+2    536365     71053                 WHITE METAL LANTERN        6      3.39      17850
+3    536365    84406B      CREAM CUPID HEARTS COAT HANGER        8      2.75      17850
+4    536365    84029G KNITTED UNION FLAG HOT WATER BOTTLE        6      3.39      17850
+5    536365    84029E      RED WOOLLY HOTTIE WHITE HEART.        6      3.39      17850
+6    536365     22752        SET 7 BABUSHKA NESTING BOXES        2      7.65      17850
+# ... with 1 more variables: Country <chr>
+> tail(new)
+# A tibble: 6 x 7
+  InvoiceNo StockCode                     Description Quantity UnitPrice CustomerID
+      <chr>     <chr>                           <chr>    <dbl>     <dbl>      <dbl>
+1    581587     23256      CHILDRENS CUTLERY SPACEBOY        4      4.15      12680
+2    581587     22613     PACK OF 20 SPACEBOY NAPKINS       12      0.85      12680
+3    581587     22899     CHILDREN'S APRON DOLLY GIRL        6      2.10      12680
+4    581587     23254    CHILDRENS CUTLERY DOLLY GIRL        4      4.15      12680
+5    581587     23255 CHILDRENS CUTLERY CIRCUS PARADE        4      4.15      12680
+6    581587     22138    BAKING SET 9 PIECE RETROSPOT        3      4.95      12680
+# ... with 1 more variables: Country <chr>
+> summary(new)
+  InvoiceNo          StockCode         Description           Quantity        
+ Length:541909      Length:541909      Length:541909      Min.   :-80995.00  
+ Class :character   Class :character   Class :character   1st Qu.:     1.00  
+ Mode  :character   Mode  :character   Mode  :character   Median :     3.00  
+                                                          Mean   :     9.55  
+                                                          3rd Qu.:    10.00  
+                                                          Max.   : 80995.00  
+                                                                             
+   UnitPrice           CustomerID       Country         
+ Min.   :-11062.06   Min.   :12346    Length:541909     
+ 1st Qu.:     1.25   1st Qu.:13953    Class :character  
+ Median :     2.08   Median :15152    Mode  :character  
+ Mean   :     4.61   Mean   :15288                      
+ 3rd Qu.:     4.13   3rd Qu.:16791                      
+ Max.   : 38970.00   Max.   :18287                      
+                     NA's   :135080                     
+> 
+> doc.vec <- VectorSource(new) # Construct a Source of Vector as input
+> doc.corpus <- Corpus(doc.vec) # Corpus- Function for Natural Language document
+> summary(doc.corpus)
+  Length Class             Mode
+1 2      PlainTextDocument list
+2 2      PlainTextDocument list
+3 2      PlainTextDocument list
+4 2      PlainTextDocument list
+5 2      PlainTextDocument list
+6 2      PlainTextDocument list
+7 2      PlainTextDocument list
+> 
+> #tm_map: function for transformation of document
+> doc.corpus <- tm_map(doc.corpus, content_transformer(tolower))
+> doc.corpus <- tm_map(doc.corpus,removePunctuation)
+> doc.corpus <- tm_map(doc.corpus, removeNumbers)
+> doc.corpus <- tm_map(doc.corpus, removeWords, stopwords("english"))
+> 
+> library(SnowballC) #Comparison of Vocabulary
+> doc.corpus <- tm_map(doc.corpus, stemDocument)
+> doc.corpus <- tm_map(doc.corpus, stripWhitespace)
+> inspect(doc.corpus[11]) # paragraph from doc. corpus of column no. given 
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] <NA>
+> inspect(doc.corpus[11])
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] <NA>
+> TDM <- TermDocumentMatrix(doc.corpus,control = list(wordLengths=c(0,Inf))) # row: terms(words) column: document(webpages)
+> TDM
+<<TermDocumentMatrix (terms: 2014, documents: 7)>>
+Non-/sparse entries: 2052/12046
+Sparsity           : 85%
+Maximal term length: 20
+Weighting          : term frequency (tf)
+> inspect(TDM[1:3,1:3])
+<<TermDocumentMatrix (terms: 3, documents: 3)>>
+Non-/sparse entries: 6/3
+Sparsity           : 33%
+Maximal term length: 8
+Weighting          : term frequency (tf)
+Sample             :
+          Docs
+Terms         1     2   3
+  amazonfe    0    34   0
+  b           0 14215  22
+  c        9289  6856 392
+> DTM <- DocumentTermMatrix(doc.corpus,control = list(wordLengths=c(0,Inf))) # row: document(webpages) column: terms(words)
+> DTM
+<<DocumentTermMatrix (documents: 7, terms: 2014)>>
+Non-/sparse entries: 2052/12046
+Sparsity           : 85%
+Maximal term length: 20
+Weighting          : term frequency (tf)
+> inspect(DTM[1:3,1:3])
+<<DocumentTermMatrix (documents: 3, terms: 3)>>
+Non-/sparse entries: 6/3
+Sparsity           : 33%
+Maximal term length: 8
+Weighting          : term frequency (tf)
+Sample             :
+    Terms
+Docs amazonfe     b    c
+   1        0     0 9289
+   2       34 14215 6856
+   3        0    22  392
+> findFreqTerms(TDM,700)  #each of this words occurred more than 1000 times
+  [1] "c"            "b"            "bank"         "d"            "dot"         
+  [6] "e"            "f"            "g"            "gift"         "l"           
+ [11] "m"            "n"            "p"            "pad"          "post"        
+ [16] "s"            "w"            "acapulco"     "acryl"        "airlin"      
+ [21] "alarm"        "alphabet"     "angel"        "anim"         "ant"         
+ [26] "antiqu"       "apothecari"   "appl"         "apron"        "art"         
+ [31] "assort"       "asstd"        "babi"         "babushka"     "backpack"    
+ [36] "bag"          "bake"         "bakelik"      "ball"         "balloon"     
+ [41] "baroqu"       "basket"       "bath"         "bathroom"     "baubl"       
+ [46] "bead"         "beaker"       "bell"         "billboard"    "bin"         
+ [51] "bird"         "birdhous"     "birthday"     "biscuit"      "black"       
+ [56] "block"        "blossom"      "blue"         "board"        "book"        
+ [61] "botan"        "bottl"        "bowl"         "box"          "boy"         
+ [66] "bracelet"     "bread"        "breakfast"    "brown"        "brush"       
+ [71] "bucket"       "build"        "bundl"        "bunni"        "bunt"        
+ [76] "butterfli"    "cabinet"      "cake"         "cakestand"    "calendar"    
+ [81] "calm"         "can"          "candi"        "candl"        "candlehold"  
+ [86] "car"          "card"         "case"         "cashcarri"    "cat"         
+ [91] "ceram"        "chain"        "chalk"        "chalkboard"   "charli"      
+ [96] "charlielola"  "charlott"     "charm"        "cherri"       "chest"       
+[101] "chick"        "child"        "children"     "chocol"       "choic"       
+[106] "christma"     "circus"       "classic"      "clip"         "clock"       
+[111] "cloth"        "coaster"      "coat"         "cocktail"     "coffe"       
+[116] "collag"       "colour"       "come"         "contain"      "cook"        
+[121] "cooki"        "cornic"       "cosi"         "cottag"       "cotton"      
+[126] "cover"        "cracker"      "craft"        "cream"        "crystal"     
+[131] "cup"          "cushion"      "cutleri"      "cutter"       "daisi"       
+[136] "decor"        "design"       "diamant"      "diet"         "diner"       
+[141] "dinner"       "dinosaur"     "dish"         "dog"          "doiley"      
+[146] "doili"        "doll"         "dolli"        "domino"       "door"        
+[151] "doormat"      "doorstop"     "dotcom"       "doughnut"     "draw"        
+[156] "drawer"       "earring"      "easter"       "edwardian"    "egg"         
+[161] "eleph"        "empir"        "enamel"       "english"      "eras"        
+[166] "fairi"        "famili"       "fan"          "fanci"        "feather"     
+[171] "felt"         "feltcraft"    "filigre"      "finish"       "first"       
+[176] "flag"         "flannel"      "flock"        "floral"       "flower"      
+[181] "fob"          "fold"         "folkart"      "font"         "food"        
+[186] "four"         "frame"        "franc"        "french"       "fri"         
+[191] "friend"       "fruit"        "funki"        "game"         "garden"      
+[196] "garland"      "giant"        "gin"          "gingham"      "girl"        
+[201] "glass"        "glaze"        "glitter"      "gloss"        "glove"       
+[206] "gold"         "green"        "greet"        "grey"         "grow"        
+[211] "gumbal"       "gymkhana"     "hand"         "hang"         "hanger"      
+[216] "happi"        "harmonica"    "head"         "heart"        "herb"        
+[221] "holder"       "home"         "honeycomb"    "hook"         "hors"        
+[226] "hot"          "hous"         "ice"          "imag"         "island"      
+[231] "ivori"        "jack"         "jam"          "jar"          "jelli"       
+[236] "jewel"        "jewelleri"    "jigsaw"       "jingl"        "jug"         
+[241] "jumbo"        "keep"         "key"          "kid"          "king"        
+[246] "kit"          "kitchen"      "knack"        "kneel"        "knick"       
+[251] "knit"         "knob"         "lace"         "ladder"       "ladi"        
+[256] "lantern"      "larg"         "lavend"       "leaf"         "leav"        
+[261] "led"          "letter"       "lid"          "light"        "lip"         
+[266] "list"         "loaf"         "lola"         "london"       "love"        
+[271] "lovebird"     "luggag"       "lunch"        "magic"        "magnet"      
+[276] "make"         "man"          "marbl"        "marker"       "mat"         
+[281] "match"        "measur"       "medium"       "memo"         "metal"       
+[286] "milk"         "mini"         "mint"         "mirror"       "money"       
+[291] "morri"        "mould"        "mug"          "multicolour"  "mushroom"    
+[296] "na"           "napkin"       "natur"        "new"          "night"       
+[301] "notebook"     "one"          "open"         "orang"        "ornament"    
+[306] "oven"         "owl"          "pack"         "paint"        "paisley"     
+[311] "pan"          "pantri"       "paper"        "parad"        "parasol"     
+[316] "parisienn"    "park"         "parti"        "passport"     "pattern"     
+[321] "pc"           "pear"         "peg"          "pen"          "pencil"      
+[326] "person"       "photo"        "picnic"       "pictur"       "piec"        
+[331] "pink"         "place"        "placemat"     "plant"        "plaster"     
+[336] "plate"        "play"         "playhous"     "pleas"        "pocket"      
+[341] "polkadot"     "popcorn"      "poppi"        "postag"       "pot"         
+[346] "potter"       "princess"     "print"        "pud"          "purpl"       
+[351] "purs"         "rabbit"       "rack"         "raffia"       "recip"       
+[356] "record"       "recycl"       "red"          "reel"         "regenc"      
+[361] "reindeer"     "retro"        "retrospot"    "rex"          "ribbon"      
+[366] "ring"         "rock"         "roll"         "rose"         "rotat"       
+[371] "round"        "ruler"        "rustic"       "santa"        "saucer"      
+[376] "scale"        "scandinavian" "scent"        "school"       "scotti"      
+[381] "seasid"       "set"          "sew"          "shape"        "shed"        
+[386] "shelf"        "shop"         "shopper"      "shoulder"     "sign"        
+[391] "silk"         "silver"       "singl"        "size"         "sketchbook"  
+[396] "skittl"       "skull"        "slate"        "sleigh"       "small"       
+[401] "snack"        "snap"         "soap"         "soft"         "soldier"     
+[406] "spaceboy"     "spice"        "spoon"        "spot"         "spotti"      
+[411] "squar"        "stamp"        "stand"        "star"         "stationeri"  
+[416] "stencil"      "stick"        "sticker"      "stock"        "storag"      
+[421] "strawberri"   "stripe"       "style"        "sugar"        "suki"        
+[426] "swallow"      "sweet"        "sweetheart"   "swir"         "tabl"        
+[431] "tag"          "tail"         "tall"         "tape"         "tea"         
+[436] "teacup"       "teapot"       "teatim"       "thermomet"    "tidi"        
+[441] "tier"         "tile"         "time"         "tin"          "tissu"       
+[446] "tlight"       "toadstool"    "toilet"       "tonic"        "top"         
+[451] "tote"         "towel"        "toy"          "tradit"       "travel"      
+[456] "tray"         "treasur"      "tree"         "trelli"       "trinket"     
+[461] "tripl"        "tube"         "tv"           "umbrella"     "union"       
+[466] "unit"         "vanilla"      "victorian"    "villag"       "vintag"      
+[471] "wall"         "wallet"       "warmer"       "wash"         "water"       
+[476] "welcom"       "white"        "wicker"       "wine"         "wire"        
+[481] "wood"         "wooden"       "woodland"     "word"         "wrap"        
+[486] "wreath"       "write"        "yellow"       "zinc"         "australia"   
+[491] "belgium"      "channel"      "eir"          "germani"      "itali"       
+[496] "kingdom"      "netherland"   "norway"       "portug"       "spain"       
+[501] "switzerland" 
+> findAssocs(TDM, "like", 0.9) #range between 0-1
+$like
+numeric(0)
+
+> TDM.common = removeSparseTerms(TDM,0.9) # commonly occuring terms with allowed less sparsity between range 0-1
+> dim(TDM) # dimensions
+[1] 2014    7
+> dim(TDM.common)
+[1] 2014    7
+> #inspect(TDM.common[1:1,1:1])
+> 
+> library(slam)
+> TDM.dense <- as.matrix(TDM) # attempt to turn its argument into matrix
+> TDM.dense
+                      Docs
+Terms                     1     2     3 4 5      6      7
+  c                    9289  6856   392 1 1      1      0
+  amazonfe                0    34     0 0 0      0      0
+  b                       0 14215    22 0 0      0      0
+  bank                    0    37  1679 0 0      0      0
+  bl                      0   388     0 0 0      0      0
+  ca                      0     1     0 0 0      0      0
+  charg                   0    37    53 0 0      0      0
+  cruk                    0    16    16 0 0      0      0
+  d                       0  3885  1252 0 0      0      0
+  dcgs                    0    20     0 0 0      0      0
+  dcgsp                   0     1     0 0 0      0      0
+  dcgssboy                0    11     0 0 0      0      0
+  dcgssgirl               0    13     0 0 0      0      0
+  dot                     0   710   120 0 0      0      0
+  e                       0  2299    30 0 0      0      0
+  f                       0  2002    15 0 0      0      0
+  g                       0  1553   763 0 0      0      0
+  gift                    0    34  5285 0 0      0      0
+  gr                      0     1     0 0 0      0      0
+  h                       0   380    30 0 0      0      0
+  j                       0   222    41 0 0      0      0
+  k                       0   439    38 0 0      0      0
+  l                       0  2390    57 0 0      0      0
+  lp                      0     1     0 0 0      0      0
+  m                       0  1023    42 0 0      0      0
+  n                       0   695    75 0 0      0      0
+  o                       0     5     5 0 0      0      0
+  p                       0   794    16 0 0      0      0
+  pad                     0     4  2410 0 0      0      0
+  post                    0  1256   205 0 0      0      0
+  r                       0    90    25 0 0      0      0
+  s                       0  1819  6648 0 0      0      0
+  t                       0    17    11 0 0      0      0
+  u                       0   166     1 0 0      0      0
+  v                       0    52    14 0 0      0      0
+  w                       0   192   811 0 0      0      0
+  y                       0     8     8 0 0      0      0
+  z                       0    10    10 0 0      0      0
+  abc                     0     0   312 0 0      0      0
+  abstract                0     0   196 0 0      0      0
+  acapulco                0     0  1135 0 0      0      0
+  account                 0     0    38 0 0      0      0
+  acryl                   0     0  1661 0 0      0      0
+  add                     0     0     1 0 0      0      0
+  address                 0     0   229 0 0      0      0
+  ade                     0     0    14 0 0      0      0
+  adjust                  0     0    33 0 0      0      0
+  adult                   0     0    46 0 0      0      0
+  advent                  0     0   554 0 0      0      0
+  afghan                  0     0    23 0 0      0      0
+  age                     0     0   355 0 0      0      0
+  ahoy                    0     0    42 0 0      0      0
+  aid                     0     0   628 0 0      0      0
+  air                     0     0   108 0 0      0      0
+  airlin                  0     0  1389 0 0      0      0
+  airmail                 0     0   226 0 0      0      0
+  alan                    0     0     1 0 0      0      0
+  alarm                   0     0  4551 0 0      0      0
+  album                   0     0   416 0 0      0      0
+  allium                  0     0     6 0 0      0      0
+  alloc                   0     0     2 0 0      0      0
+  alphabet                0     0  3921 0 0      0      0
+  alpin                   0     0   113 0 0      0      0
+  aluminium               0     0   139 0 0      0      0
+  amazon                  0     0    57 0 0      0      0
+  amber                   0     0   118 0 0      0      0
+  ameli                   0     0   304 0 0      0      0
+  amethyst                0     0   111 0 0      0      0
+  anemon                  0     0     2 0 0      0      0
+  angel                   0     0  1598 0 0      0      0
+  angelpink               0     0     2 0 0      0      0
+  anim                    0     0  2038 0 0      0      0
+  ant                     0     0  1401 0 0      0      0
+  antiqu                  0     0  6478 0 0      0      0
+  antoienett              0     0     1 0 0      0      0
+  antoinett               0     0    59 0 0      0      0
+  aperitif                0     0    10 0 0      0      0
+  apothecari              0     0   772 0 0      0      0
+  appl                    0     0  5926 0 0      0      0
+  apron                   0     0  3176 0 0      0      0
+  aqua                    0     0    12 0 0      0      0
+  area                    0     0   610 0 0      0      0
+  armi                    0     0   143 0 0      0      0
+  arouz                   0     0     2 0 0      0      0
+  art                     0     0  2709 0 0      0      0
+  articul                 0     0     3 0 0      0      0
+  artifici                0     0    65 0 0      0      0
+  artiifci                0     0     9 0 0      0      0
+  arton                   0     0     1 0 0      0      0
+  ashtray                 0     0    28 0 0      0      0
+  ashtrayrevolutionari    0     0     4 0 0      0      0
+  asid                    0     0     6 0 0      0      0
+  aso                     0     0     1 0 0      0      0
+  ass                     0     0   282 0 0      0      0
+  assort                  0     0  7587 0 0      0      0
+  asst                    0     0   108 0 0      0      0
+  asstd                   0     0   877 0 0      0      0
+  away                    0     0    21 0 0      0      0
+  awayc                   0     0     2 0 0      0      0
+  awayrusti               0     0     1 0 0      0      0
+  babi                    0     0  1634 0 0      0      0
+  babushka                0     0  3211 0 0      0      0
+  back                    0     0   364 0 0      0      0
+  backpack                0     0   708 0 0      0      0
+  bad                     0     0    25 0 0      0      0
+  badg                    0     0   485 0 0      0      0
+  bag                     0     0 52199 0 0      0      0
+  bain                    0     0   111 0 0      0      0
+  bake                    0     0  4279 0 0      0      0
+  bakelik                 0     0  4461 0 0      0      0
+  baker                   0     0    32 0 0      0      0
+  ball                    0     0  1591 0 0      0      0
+  balloon                 0     0  1971 0 0      0      0
+  balm                    0     0    31 0 0      0      0
+  bamboo                  0     0    92 0 0      0      0
+  band                    0     0    61 0 0      0      0
+  bangl                   0     0    35 0 0      0      0
+  banner                  0     0     1 0 0      0      0
+  banquet                 0     0   195 0 0      0      0
+  bar                     0     0     9 0 0      0      0
+  barcod                  0     0     5 0 0      0      0
+  barn                    0     0    10 0 0      0      0
+  baroqu                  0     0  1257 0 0      0      0
+  baroquecandlestick      0     0    44 0 0      0      0
+  barrel                  0     0    17 0 0      0      0
+  barrier                 0     0   140 0 0      0      0
+  base                    0     0    66 0 0      0      0
+  basebal                 0     0   223 0 0      0      0
+  basil                   0     0   478 0 0      0      0
+  basin                   0     0   131 0 0      0      0
+  basket                  0     0  2009 0 0      0      0
+  bath                    0     0  1767 0 0      0      0
+  bathroom                0     0  1880 0 0      0      0
+  batteri                 0     0   110 0 0      0      0
+  baubl                   0     0   911 0 0      0      0
+  bazaar                  0     0     1 0 0      0      0
+  bdraw                   0     0    25 0 0      0      0
+  bea                     0     0     4 0 0      0      0
+  beach                   0     0   331 0 0      0      0
+  bead                    0     0  2000 0 0      0      0
+  beadshand               0     0     1 0 0      0      0
+  beak                    0     0   345 0 0      0      0
+ [ reached getOption("max.print") -- omitted 1872 rows ]
+> #summary(TDM.dense)
+> 
+> # Object.size provides an estimate of the memory that is being used to store an R object
+> object.size(TDM.common)
+151056 bytes
+> object.size(TDM.dense)
+229936 bytes
+> 
+> library(wordcloud)
+> library(RColorBrewer)
+> palette <- brewer.pal(9,"YlOrBr")[-(1:7)]#brewer.pal: function for color Palette
+> wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1, color= palette)
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> #Convert dtm to matrix
+> m <- as.matrix(DTM)
+> 
+> #Shorten rownames for display purposes
+> rownames(m) <- paste(substring(rownames(m),1,3),rep("..",nrow(m)),
++                      substring(rownames(m),
++                                nchar(rownames(m))-1,nchar(rownames(m))-2))  #paste function: concatenate vectors after converting to character.
+> 
+> #Compute distance between document vectors
+> d <- dist(m)
+> d
+          1 ..      2 ..      3 ..      4 ..      5 ..      6 .. 
+2 ..   15769.13                                                  
+3 ..  168041.95 168535.72                                        
+4 ..    9288.00  17021.66 167806.72                              
+5 ..    9288.00  17021.66 167806.72      0.00                    
+6 ..  135398.94 136148.24 214506.15 135080.00 135080.00          
+7 ..  701006.19 701151.30 720690.06 700944.64 700944.64 713841.72
+> 
+> #Run Hierarchical Clustering using Ward's method
+> 
+> suppressPackageStartupMessages(library(dendextend))
+> 
+> library(cluster)
+> library(ggplot2)
+> library(factoextra)
+> library(colorspace)
+> library(dendextend)
+> 
+> # Plot with Ward.D method
+> group <- hclust(d,method = "ward.D")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group)
+> dend %>% set("branches_k_color") %>% plot( main="ward.D")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Ward.D2 method
+> group1 <- hclust(d,method = "ward.D2")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group1)
+> dend %>% set("branches_k_color") %>% plot( main="ward.D2")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Single method
+> group2 <- hclust(d,method = "single")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group2)
+> dend %>% set("branches_k_color") %>% plot( main="Single")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Complete method
+> group3 <- hclust(d,method = "complete")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group3)
+> dend %>% set("branches_k_color") %>% plot( main="Complete")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Average method
+> group4 <- hclust(d,method = "average")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group4)
+> dend %>% set("branches_k_color") %>% plot( main="Average")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with mcquitty method
+> group5 <- hclust(d,method = "mcquitty")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group5)
+> dend %>% set("branches_k_color") %>% plot( main="Mcquitty")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with median method
+> group6 <- hclust(d,method = "median")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group6)
+> dend %>% set("branches_k_color") %>% plot( main="Median")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with centroid method
+> group7 <- hclust(d,method = "centroid")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group7)
+> dend %>% set("branches_k_color") %>% plot( main="Centroid")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 10, lty = 15, lwd = 20)

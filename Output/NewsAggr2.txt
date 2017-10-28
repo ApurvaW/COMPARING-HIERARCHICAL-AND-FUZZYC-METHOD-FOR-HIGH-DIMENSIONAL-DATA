@@ -1,0 +1,1243 @@
+> library(tm) #Text Mining Package
+> library(readr)
+> newsCorpora <- read_csv("~/Masters Projet/News Aggregator/newsCorpora.csv", 
++                                col_names = FALSE)
+Parsed with column specification:
+cols(
+  X1 = col_character(),
+  X2 = col_character(),
+  X3 = col_character(),
+  X4 = col_character()
+)
+Warning: 99283 parsing failures.
+row # A tibble: 5 x 5 col     row   col  expected    actual                                               file expected   <int> <chr>     <chr>     <chr>                                              <chr> actual 1     2  <NA> 4 columns 1 columns '~/Masters Projet/News Aggregator/newsCorpora.csv' file 2     3  <NA> 4 columns 1 columns '~/Masters Projet/News Aggregator/newsCorpora.csv' row 3     4  <NA> 4 columns 2 columns '~/Masters Projet/News Aggregator/newsCorpora.csv' col 4     5  <NA> 4 columns 1 columns '~/Masters Projet/News Aggregator/newsCorpora.csv' expected 5     6  <NA> 4 columns 1 columns '~/Masters Projet/News Aggregator/newsCorpora.csv'
+... ................. ... .................................................................................... ........ .................................................................................... ...... .................................................................................... .... ............... [... truncated]
+Warning message:
+In rbind(names(probs), probs_f) :
+  number of columns of result is not a multiple of vector length (arg 1)
+> ## News Aggregator Dataset File 2
+> length(newsCorpora)
+[1] 4
+> head(newsCorpora)
+# A tibble: 6 x 4
+                                                                                         X1
+                                                                                      <chr>
+1                                        "1\tFed official says weak data caused by weather"
+2 "2\tFed's Charles Plosser sees high bar for change in pace of tapering\thttp://www.livemi
+3 "3\tUS open: Stocks fall after Fed official hints at accelerated tapering\thttp://www.ifa
+4                                                 "4\tFed risks falling 'behind the curve'"
+5 "5\tFed's Plosser: Nasty Weather Has Curbed Job Growth\thttp://www.moneynews.com/Economy/
+6 "6\tPlosser: Fed May Have to Accelerate Tapering Pace\thttp://www.nasdaq.com/article/plos
+# ... with 3 more variables: X2 <chr>, X3 <chr>, X4 <chr>
+> tail(newsCorpora)
+# A tibble: 6 x 4
+                                                                                         X1
+                                                                                      <chr>
+1 "420847\tABC Announced Next Season's Bachelor\thttp://nymag.com/thecut/2014/08/abc-announ
+2 "420848\tIowa farmer Chris Soules is ABC's next 'Bachelor' | The Republic\thttp://www.tri
+3 "420849\tAnd the New Bachelor Is\thttp://www.whitehalljournal.com/article/ZZ/20140827/NEW
+4                               "420850\tThe New Bachelor Has Been Announced (and He's Hot"
+5 "420851\tChris Soules Is The New Bachelor! Does This Farm-Fed Beefcake Do It For You?!\th
+6                                   "420852\tChris Soules Confirms He's the New \"Bachelor"
+# ... with 3 more variables: X2 <chr>, X3 <chr>, X4 <chr>
+> summary(newsCorpora)
+      X1                 X2                 X3                 X4           
+ Length:89630       Length:89630       Length:89630       Length:89630      
+ Class :character   Class :character   Class :character   Class :character  
+ Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+> news = newsCorpora
+> length(news)
+[1] 4
+> 
+> doc.vec <- VectorSource(news) # Construct a Source of Vector as input
+> doc.corpus <- Corpus(doc.vec) # Corpus- Function for Natural Language document
+> summary(doc.corpus)
+  Length Class             Mode
+1 2      PlainTextDocument list
+2 2      PlainTextDocument list
+3 2      PlainTextDocument list
+4 2      PlainTextDocument list
+> 
+> #tm_map: function for transformation of document
+> doc.corpus <- tm_map(doc.corpus, content_transformer(tolower))
+> doc.corpus <- tm_map(doc.corpus,removePunctuation)
+> doc.corpus <- tm_map(doc.corpus, removeNumbers)
+> doc.corpus <- tm_map(doc.corpus, removeWords, stopwords("english"))
+> 
+> library(SnowballC) #Comparison of Vocabulary
+> doc.corpus <- tm_map(doc.corpus, stemDocument)
+> doc.corpus <- tm_map(doc.corpus, stripWhitespace)
+> inspect(doc.corpus[11]) # paragraph from doc. corpus of column no. given 
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] <NA>
+> inspect(doc.corpus[11])
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] <NA>
+> TDM <- TermDocumentMatrix(doc.corpus) # row: terms(words) column: document(webpages)
+> TDM
+<<TermDocumentMatrix (terms: 708381, documents: 4)>>
+Non-/sparse entries: 727541/2105983
+Sparsity           : 74%
+Maximal term length: 433
+Weighting          : term frequency (tf)
+> inspect(TDM[1:3,1:3])
+<<TermDocumentMatrix (terms: 3, documents: 3)>>
+Non-/sparse entries: 5/4
+Sparsity           : 44%
+Maximal term length: 51
+Weighting          : term frequency (tf)
+Sample             :
+                                                     Docs
+Terms                                                 1  2 3
+  aaa                                                 6 45 2
+  aaastbtdixjwzlpjqwmttovrtpbibymtnewssciencemagorgt  1  0 0
+  aaastbtdtdjyjcrkwlsmwvgiejqvfulmtnewssciencemagorgt 1  0 0
+> DTM <- DocumentTermMatrix(doc.corpus) # row: document(webpages) column: terms(words)
+> DTM
+<<DocumentTermMatrix (documents: 4, terms: 708381)>>
+Non-/sparse entries: 727541/2105983
+Sparsity           : 74%
+Maximal term length: 433
+Weighting          : term frequency (tf)
+> inspect(DTM[1:3,1:3])
+<<DocumentTermMatrix (documents: 3, terms: 3)>>
+Non-/sparse entries: 5/4
+Sparsity           : 44%
+Maximal term length: 51
+Weighting          : term frequency (tf)
+Sample             :
+    Terms
+Docs aaa aaastbtdixjwzlpjqwmttovrtpbibymtnewssciencemagorgt
+   1   6                                                  1
+   2  45                                                  0
+   3   2                                                  0
+    Terms
+Docs aaastbtdtdjyjcrkwlsmwvgiejqvfulmtnewssciencemagorgt
+   1                                                   1
+   2                                                   0
+   3                                                   0
+> findFreqTerms(TDM,700)  #each of this words occurred more than 1000 times
+  [1] "accus"       "acquir"      "act"         "action"      "actor"       "add"        
+  [7] "admit"       "affect"      "africa"      "age"         "agre"        "ahead"      
+ [13] "aim"         "air"         "airlin"      "album"       "alert"       "alleg"      
+ [19] "amaz"        "amazon"      "america"     "american"    "amid"        "among"      
+ [25] "andi"        "android"     "angel"       "announc"     "anoth"       "apolog"     
+ [31] "app"         "appear"      "appl"        "approv"      "april"       "arrest"     
+ [37] "arriv"       "ask"         "attack"      "author"      "auto"        "avail"      
+ [43] "award"       "babi"        "bachelor"    "bachelorett" "back"        "bad"        
+ [49] "ban"         "bank"        "battl"       "bay"         "beat"        "becom"      
+ [55] "begin"       "behind"      "bell"        "best"        "bet"         "better"     
+ [61] "beyonc"      "bid"         "bieber"      "big"         "biggest"     "bill"       
+ [67] "billion"     "black"       "blood"       "bond"        "book"        "boost"      
+ [73] "box"         "boy"         "brand"       "break"       "bring"       "brown"      
+ [79] "bug"         "build"       "busi"        "buy"         "call"        "camera"     
+ [85] "can"         "canada"      "cancel"      "cancer"      "cant"        "capit"      
+ [91] "car"         "care"        "case"        "cast"        "caus"        "celebr"     
+ [97] "cent"        "ceo"         "challeng"    "chang"       "charg"       "cheat"      
+[103] "chief"       "children"    "china"       "chines"      "chris"       "citi"       
+[109] "claim"       "climat"      "close"       "cloud"       "coast"       "colbert"    
+[115] "come"        "compani"     "complet"     "concern"     "confirm"     "consum"     
+[121] "continu"     "control"     "corpor"      "cost"        "counti"      "countri"    
+[127] "court"       "cover"       "crash"       "creat"       "critic"      "crush"      
+[133] "custom"      "cut"         "cyrus"       "daili"       "danc"        "data"       
+[139] "date"        "day"         "dead"        "deal"        "death"       "debut"      
+[145] "declin"      "defend"      "delay"       "demand"      "deni"        "design"     
+[151] "despit"      "detail"      "detect"      "detroit"     "develop"     "devic"      
+[157] "die"         "digit"       "direct"      "director"    "discov"      "doctor"     
+[163] "doesnt"      "dog"         "dollar"      "dont"        "doubl"       "dress"      
+[169] "drink"       "drive"       "drop"        "drug"        "due"         "earli"      
+[175] "earn"        "earth"       "ebola"       "ecb"         "econom"      "economi"    
+[181] "edg"         "efron"       "electr"      "end"         "energi"      "episod"     
+[187] "epoch"       "estim"       "euro"        "even"        "ever"        "expand"     
+[193] "expect"      "experi"      "explor"      "eye"         "face"        "facebook"   
+[199] "fail"        "fall"        "famili"      "fan"         "fast"        "featur"     
+[205] "fed"         "festiv"      "fight"       "file"        "film"        "final"      
+[211] "financ"      "financi"     "find"        "fire"        "firm"        "first"      
+[217] "fit"         "five"        "fix"         "fli"         "flight"      "focus"      
+[223] "follow"      "food"        "forc"        "ford"        "forecast"    "found"      
+[229] "four"        "fox"         "free"        "friend"      "full"        "fund"       
+[235] "futur"       "gain"        "galaxi"      "game"        "gas"         "gay"        
+[241] "gear"        "general"     "georg"       "get"         "giant"       "girl"       
+[247] "give"        "glass"       "global"      "globe"       "goe"         "gold"       
+[253] "gomez"       "good"        "googl"       "got"         "govern"      "grand"      
+[259] "great"       "group"       "grow"        "growth"      "guardian"    "hack"       
+[265] "happi"       "harri"       "head"        "health"      "heart"       "heartble"   
+[271] "help"        "high"        "higher"      "hill"        "hit"         "hold"       
+[277] "hollywood"   "home"        "hope"        "hospit"      "host"        "hous"       
+[283] "htc"         "ice"         "idol"        "ignit"       "imag"        "improv"     
+[289] "inc"         "inch"        "includ"      "increas"     "india"       "industri"   
+[295] "inflat"      "interest"    "intern"      "internet"    "introduc"    "invest"     
+[301] "investig"    "investor"    "ipad"        "iphon"       "ipo"         "iraq"       
+[307] "issu"        "jackson"     "jame"        "japan"       "jay"         "jenner"     
+[313] "jet"         "jimmi"       "job"         "john"        "join"        "joli"       
+[319] "journal"     "juli"        "jump"        "june"        "just"        "justin"     
+[325] "kany"        "kardashian"  "keep"        "key"         "kick"        "kid"        
+[331] "kill"        "kim"         "king"        "know"        "kong"        "korea"      
+[337] "land"        "last"        "late"        "latest"      "launch"      "law"        
+[343] "lead"        "leak"        "leav"        "less"        "let"         "level"      
+[349] "life"        "light"       "like"        "link"        "list"        "littl"      
+[355] "live"        "local"       "lohan"       "look"        "lose"        "loss"       
+[361] "love"        "low"         "lower"       "made"        "magazin"     "mail"       
+[367] "major"       "make"        "maker"       "malaysia"    "man"         "manufactur" 
+[373] "mar"         "march"       "mark"        "market"      "marri"       "martin"     
+[379] "may"         "mccarthi"    "mean"        "media"       "medic"       "meet"       
+[385] "men"         "mer"         "merger"      "met"         "michael"     "microsoft"  
+[391] "might"       "miley"       "million"     "mini"        "minut"       "miss"       
+[397] "mix"         "mobil"       "model"       "mom"         "money"       "month"      
+[403] "moon"        "morn"        "mortgag"     "mother"      "motor"       "move"       
+[409] "movi"        "mtv"         "much"        "music"       "name"        "nation"     
+[415] "near"        "need"        "net"         "network"     "neutral"     "never"      
+[421] "new"         "news"        "next"        "night"       "nokia"       "north"      
+[427] "note"        "now"         "number"      "obama"       "oculus"      "offer"      
+[433] "offic"       "offici"      "oil"         "old"         "one"         "onlin"      
+[439] "open"        "order"       "outbreak"    "paltrow"     "part"        "parti"      
+[445] "pass"        "past"        "patent"      "patient"     "paul"        "pay"        
+[451] "peopl"       "per"         "percent"     "perform"     "phone"       "photo"      
+[457] "pick"        "pictur"      "plan"        "plane"       "planet"      "play"       
+[463] "polici"      "possibl"     "post"        "power"       "predict"     "premier"    
+[469] "prepar"      "press"       "prevent"     "preview"     "price"       "prime"      
+[475] "pro"         "probe"       "problem"     "product"     "profit"      "project"    
+[481] "propos"      "protect"     "protest"     "provid"      "public"      "pull"       
+[487] "push"        "put"         "quarter"     "question"    "rais"        "rate"       
+[493] "reach"       "read"        "readi"       "real"        "realiti"     "realli"     
+[499] "reason"      "recal"       "recap"       "receiv"      "record"      "red"        
+[505] "reduc"       "reject"      "releas"      "remain"      "replac"      "report"     
+[511] "research"    "result"      "retail"      "return"      "reveal"      "revenu"     
+[517] "review"      "right"       "rise"        "risk"        "rock"        "rogen"      
+[523] "roll"        "rule"        "rumor"       "run"         "safeti"      "sale"       
+[529] "samsung"     "san"         "satellit"    "save"        "say"         "school"     
+[535] "scienc"      "scott"       "screen"      "search"      "season"      "second"     
+[541] "secret"      "secur"       "see"         "seek"        "seen"        "selena"     
+[547] "sell"        "sequel"      "seri"        "servic"      "set"         "settl"      
+[553] "sex"         "share"       "shock"       "short"       "show"        "shower"     
+[559] "sign"        "sinc"        "singer"      "slam"        "slip"        "slow"       
+[565] "smart"       "smartphon"   "smith"       "smoke"       "social"      "song"       
+[571] "south"       "space"       "spec"        "spend"       "spi"         "spiderman"  
+[577] "split"       "spoiler"     "spot"        "spread"      "star"        "start"      
+[583] "state"       "stay"        "step"        "still"       "stock"       "stone"      
+[589] "stop"        "store"       "stori"       "stream"      "street"      "strike"     
+[595] "strong"      "studi"       "sue"         "superman"    "support"     "surfac"     
+[601] "surg"        "surpris"     "switch"      "system"      "tab"         "tablet"     
+[607] "take"        "talk"        "tappl"       "target"      "tax"         "team"       
+[613] "tech"        "technolog"   "teen"        "tell"        "tesla"       "test"       
+[619] "tfacebook"   "tgoogl"      "thing"       "think"       "thow"        "threaten"   
+[625] "three"       "throne"      "time"        "tmicrosoft"  "tnew"        "today"      
+[631] "tonight"     "top"         "tour"        "track"       "trade"       "trailer"    
+[637] "transform"   "travel"      "tri"         "trial"       "tsamsung"    "tthe"       
+[643] "turn"        "tus"         "tweet"       "twitter"     "two"         "ukrain"     
+[649] "unemploy"    "unit"        "unveil"      "updat"       "urg"         "use"        
+[655] "user"        "valley"      "vega"        "vehicl"      "video"       "view"       
+[661] "virus"       "voic"        "walk"        "walker"      "wall"        "want"       
+[667] "war"         "warm"        "warn"        "warner"      "watch"       "water"      
+[673] "way"         "wear"        "wed"         "week"        "weekend"     "west"       
+[679] "white"       "wife"        "will"        "william"     "win"         "window"     
+[685] "winner"      "winter"      "without"     "woman"       "women"       "wont"       
+[691] "work"        "worker"      "world"       "worst"       "worth"       "xbox"       
+[697] "xmen"        "year"        "yellen"      "york"        "young"       "“"        
+> findAssocs(TDM, "like", 0.8) #range between 0-1
+                                                                                                 1 
+                                                                                            chariti 
+                                                                                                  1 
+                                                                                         charleston 
+                                                                                                  1 
+                                                                                             charli 
+                                                                                                  1 
+                                                                                     charlottesvill 
+                                                                                                  1 
+                                                                                            charney 
+                                                                                                  1 
+                                                                                              chart 
+                                                                                                  1 
+                                                                                              chase 
+                                                                                                  1 
+                                                                                               chat 
+                                                                                                  1 
+                           chattanoogathttpwwwchattanoogancomgaspricesfallcentsinchattanoogaaspxtth 
+                                                                                                  1 
+                           chattanoogathttpwwwchattanoogancomgaspricesrisecentsinchattanoogaaspxtth 
+                                                                                                  1 
+                                                                                              cheap 
+                                                                                                  1 
+                                                                                           cheapest 
+                                                                                                  1 
+                                                                                            cheater 
+                                                                                                  1 
+                                                                                            checkin 
+                                                                                                  1 
+                                                                                              cheek 
+                                                                                                  1 
+                                                                                              cheer 
+                                                                                                  1 
+                                                                                               chef 
+                                                                                                  1 
+                                                                                             chelsi 
+                                                                                                  1 
+                                                                                          chemistri 
+                                                                                                  1 
+                                                                                              chest 
+                                                                                                  1 
+                                                                                               chic 
+                                                                                                  1 
+                                                                                            chicago 
+                                                                                                  1 
+                                                                                            chicken 
+                                                                                                  1 
+                                                                                           children 
+                                                                                                  1 
+                                      childthttparchivefirstcoastnewscomvideodefaultaspxbctidtfirst 
+                                                                                                  1 
+                                                                                              chill 
+                                                                                                  1 
+                                                                                              china 
+                                                                                                  1 
+                                                               chinathttpwwwbbccouknewsbusinesstbbc 
+                                                                                                  1 
+                                                                                         chinesemad 
+                                                                                                  1 
+                                                                                               chip 
+                                                                                                  1 
+                                                                                              choir 
+                                                                                                  1 
+                                                                                              choke 
+                                                                                                  1 
+                                                                                        cholesterol 
+                                                                                                  1 
+                                                                                              choos 
+                                                                                                  1 
+                                                                                             chorus 
+                                                                                                  1 
+                                                                                              chose 
+                                                                                                  1 
+                                                                                             chosen 
+                                                                                                  1 
+                                                                                              chris 
+                                                                                                  1 
+                                                                                            chrissi 
+                                                                                                  1 
+                                                                                         chromebook 
+                                                                                                  1 
+                                                                                         chromecast 
+                                                                                                  1 
+                                                                                              chung 
+                                                                                                  1 
+                                                                                              chunk 
+                                                                                                  1 
+                                                                                              churn 
+                                                                                                  1 
+                                                                                                cia 
+                                                                                                  1 
+                                                                                              cigar 
+                                                                                                  1 
+                                                                                           cigarett 
+                                                                                                  1 
+                                                                                              circl 
+                                                                                                  1 
+                                                                                               cite 
+                                                                                                  1 
+                                                                                               citi 
+                                                                                                  1 
+                                                                                            citizen 
+                                                                                                  1 
+                                                                                        citizenship 
+                                                                                                  1 
+                                                                                           citybusi 
+                                                                                                  1 
+                                                                                            citywid 
+                                                                                                  1 
+                                                                                               clad 
+                                                                                                  1 
+                                                                                              claim 
+                                                                                                  1 
+                                                                                              clair 
+                                                                                                  1 
+                                                                                             clamor 
+                                                                                                  1 
+                                                                                         clandestin 
+                                                                                                  1 
+                                                                                              clara 
+                                                                                                  1 
+                                                                                            clarifi 
+                                                                                                  1 
+                                                                                            clarita 
+                                                                                                  1 
+                                                                                           classact 
+                                                                                                  1 
+                                                                                           classifi 
+                                                                                                  1 
+                                                                                              claus 
+                                                                                                  1 
+                                                                                               claw 
+                                                                                                  1 
+                                                                                              clean 
+                                                                                                  1 
+                                                                                              clear 
+                                                                                                  1 
+                                                                                           clearanc 
+                                                                                                  1 
+                                                                                           clearest 
+                                                                                                  1 
+                                                                                            cleavag 
+                                                                                                  1 
+                                                                                             client 
+                                                                                                  1 
+                                                                                             climat 
+                                                                                                  1 
+                                                                                              climb 
+                                                                                                  1 
+                                                                                            clipper 
+                                                                                                  1 
+                                                                                                clo 
+                                                                                                  1 
+                                        clockthttpwwwtimesunioncomlivingarticlemovieclockphptalbani 
+                                                                                                  1 
+                                                                                              close 
+                                                                                                  1 
+                                                                                             closer 
+                                                                                                  1 
+                                                                                            closest 
+                                                                                                  1 
+                                             closethttpwwwmacrobusinesscomauasxattheclosetmacrobusi 
+                                                                                                  1 
+                                                                                              cloth 
+                                                                                                  1 
+                                                                                        cloudcomput 
+                                                                                                  1 
+                                                                                             cloudi 
+                                                                                                  1 
+                                                                                              clout 
+                                                                                                  1 
+                                                                                               clue 
+                                                                                                  1 
+                                                                                             cluley 
+                                                                                                  1 
+                                                                                                cma 
+                                                                                                  1 
+                                                                                                cmo 
+                                                                                                  1 
+                                                                                               cnbc 
+                                                                                                  1 
+                                                                                                cni 
+                                                                                                  1 
+                                                                                              coast 
+                                                                                                  1 
+                                                                                               coat 
+                                                                                                  1 
+                                                                                             cobalt 
+                                                                                                  1 
+                                                                                               cobi 
+                                                                                                  1 
+                                                                                               code 
+                                                                                                  1 
+                                                                                            codenam 
+                                                                                                  1 
+                                                                                              coffe 
+                                                                                                  1 
+                                                                                             cognit 
+                                                                                                  1 
+                                                                                          coheadlin 
+                                                                                                  1 
+                                                                                             cohost 
+                                                                                                  1 
+                                                                                               coke 
+                                                                                                  1 
+                                                                                            colbert 
+                                                                                                  1 
+                                                                                               cold 
+                                                                                                  1 
+                                                                                            collaps 
+                                                                                                  1 
+                                                                                            collect 
+                                                                                                  1 
+                                                                                             colleg 
+                                                                                                  1 
+                                                                                             collis 
+                                                                                                  1 
+                                                                                        colonoscopi 
+                                                                                                  1 
+                                                                                              color 
+                                                                                                  1 
+                                                                                           colorect 
+                                                                                                  1 
+                                                                                             colton 
+                                                                                                  1 
+                                                                                           columbia 
+                                                                                                  1 
+                                                                                           columbus 
+                                                                                                  1 
+                                                                                                com 
+                                                                                                  1 
+                                                                                             combat 
+                                                                                                  1 
+                                                                                             combin 
+                                                                                                  1 
+                                                                                              combo 
+                                                                                                  1 
+                                                                                               come 
+                                                                                                  1 
+                                                                                           comeback 
+                                                                                                  1 
+                                                                                             comedi 
+                                                                                                  1 
+                                                                                           comedian 
+                                                                                                  1 
+                                                                                             cometh 
+                                                                                                  1 
+                                                                                            comfort 
+                                                                                                  1 
+                                                                                            command 
+                                                                                                  1 
+                                                                                            commend 
+                                                                                                  1 
+                                                                                            comment 
+                                                                                                  1 
+                                                                                         commentari 
+                                                                                                  1 
+                                                                                            commerc 
+                                                                                                  1 
+                                                                                       commercialis 
+                                                                                                  1 
+                                                                                             commod 
+                                                                                                  1 
+                                                                                           commodor 
+                                                                                                  1 
+                                                                                             common 
+                                                                                                  1 
+                                                                                       commonwealth 
+                                                                                                  1 
+                                                                                           communic 
+                                                                                                  1 
+                                                                                            compani 
+                                                                                                  1 
+                                                                                             compar 
+                                                                                                  1 
+                                                                                            compass 
+                                                                                                  1 
+                                                                                             compel 
+                                                                                                  1 
+                                                                                             compet 
+                                                                                                  1 
+                                                                                           competit 
+                                                                                                  1 
+                                                                                           complain 
+                                                                                                  1 
+                                                                                          complaint 
+                                                                                                  1 
+                                                                                            complet 
+                                                                                                  1 
+                                                                                             compli 
+                                                                                                  1 
+                                                                                           composit 
+                                                                                                  1 
+                                                                                         comprehens 
+                                                                                                  1 
+                                                                                             comput 
+                                                                                                  1 
+                                                                                        computersci 
+                                                                                                  1 
+                                                                                                con 
+                                                                                                  1 
+                                                                                            conceal 
+                                                                                                  1 
+                                                                                            concept 
+                                                                                                  1 
+                                                                                            concern 
+                                                                                                  1 
+                                                                                            conclus 
+                                                                                                  1 
+                                                                                            condemn 
+                                                                                                  1 
+                                                                                             condit 
+                                                                                                  1 
+                                                                                             confid 
+                                                                                                  1 
+                                                                                         confidenti 
+                                                                                                  1 
+                                                                                           configur 
+                                                                                                  1 
+                                                                                            confirm 
+                                                                                                  1 
+                                                                                           conflict 
+                                                                                                  1 
+                                                                                           confound 
+                                                                                                  1 
+                                                                                           confront 
+                                                                                                  1 
+                                                                                             confus 
+                                                                                                  1 
+                                                                                          conglomer 
+                                                                                                  1 
+                                                                                          congratul 
+                                                                                                  1 
+                                                                                        congression 
+                                                                                                  1 
+                                                                                        congressmen 
+                                                                                                  1 
+                                                                                            connect 
+                                                                                                  1 
+                                                                                           connelli 
+                                                                                                  1 
+                                                                                             connor 
+                                                                                                  1 
+                                                                                          conscious 
+                                                                                                  1 
+                                                                                           consecut 
+                                                                                                  1 
+                                                                                           consensu 
+                                                                                                  1 
+                                                                                            consequ 
+                                                                                                  1 
+                                                                                             consid 
+                                                                                                  1 
+                                                                                           consider 
+                                                                                                  1 
+                                                                                           consolid 
+                                                                                                  1 
+                                                                                            conspir 
+                                                                                                  1 
+                                                                                         constancio 
+                                                                                                  1 
+                                                                                           constant 
+                                                                                                  1 
+                                                                                          constitut 
+                                                                                                  1 
+                                                                                            consult 
+                                                                                                  1 
+                                                                                             consum 
+                                                                                                  1 
+                                                                                           consumer 
+                                                                                                  1 
+                                                                                            consumm 
+                                                                                                  1 
+                                                                                           contamin 
+                                                                                                  1 
+                                                                                            contend 
+                                                                                                  1 
+                                                                                            contest 
+                                                                                                  1 
+                                                                                            continu 
+                                                                                                  1 
+                                                                                      contradictori 
+                                                                                                  1 
+                                                                                           contrast 
+                                                                                                  1 
+                                                                                            control 
+                                                                                                  1 
+                                                                                        controversi 
+                                                                                                  1 
+                                                                                             conven 
+                                                                                                  1 
+                                                                                            convent 
+                                                                                                  1 
+                                                                                            convers 
+                                                                                                  1 
+                                                                                            convict 
+                                                                                                  1 
+                                                                                               cook 
+                                                                                                  1 
+                                                                                               cool 
+                                                                                                  1 
+                                                                                            coolest 
+                                                                                                  1 
+                                                                                             cooper 
+                                                                                                  1 
+                                                                                            coordin 
+                                                                                                  1 
+                                                                                               cope 
+                                                                                                  1 
+                                                                                         copenhagen 
+                                                                                                  1 
+                                                                                             copper 
+                                                                                                  1 
+                                                                                            copycat 
+                                                                                                  1 
+                                                                                          copyright 
+                                                                                                  1 
+                                                                                            cordcut 
+                                                                                                  1 
+                                                                                             corker 
+                                                                                                  1 
+                                                                                               corn 
+                                                                                                  1 
+                                                                                             corner 
+                                                                                                  1 
+                                                                                               corp 
+                                                                                                  1 
+                                                                                             corpor 
+                                                                                                  1 
+                                                                                             corpus 
+                                                                                                  1 
+                                                                                                cos 
+                                                                                                  1 
+                                                                                               cosi 
+                                                                                                  1 
+                                                                                          cosponsor 
+                                                                                                  1 
+                                                                                               cost 
+                                                                                                  1 
+                                                                                              costa 
+                                                                                                  1 
+                                                                                             costar 
+                                                                                                  1 
+                                                                                           costshar 
+                                                                                                  1 
+                                                                                            couldnt 
+                                                                                                  1 
+                                                                                            counter 
+                                                                                                  1 
+                                                                                             counti 
+                                                                                                  1 
+                                                                                            courier 
+                                                                                                  1 
+                                                                                              court 
+                                                                                                  1 
+                                                                                           courtesi 
+                                                                                                  1 
+                                                                                          courthous 
+                                                                                                  1 
+                                                                                              coven 
+                                                                                                  1 
+                                                                                            coverag 
+                                                                                                  1 
+                                                                                              cowen 
+                                                                                                  1 
+                                                                                                cps 
+                                                                                                  1 
+                                                                                              crack 
+                                                                                                  1 
+                                                                                             crackl 
+                                                                                                  1 
+                                                                                             cramer 
+                                                                                                  1 
+                                                                                              cramp 
+                                                                                                  1 
+                                                                                              crank 
+                                                                                                  1 
+                                                                                              crapo 
+                                                                                                  1 
+                                                                                              craze 
+                                                                                                  1 
+                                                                                              crazi 
+                                                                                                  1 
+                                                                                           craziest 
+                                                                                                  1 
+                                                                                              creat 
+                                                                                                  1 
+                                                                                           creation 
+                                                                                                  1 
+                                                                                            credibl 
+                                                                                                  1 
+                                                                                             credit 
+                                                                                                  1 
+                                                                                              creep 
+                                                                                                  1 
+                                                                                             cremat 
+                                                                                                  1 
+                                                                                           crescent 
+                                                                                                  1 
+                                                                                               crew 
+                                                                                                  1 
+                                                                                                cri 
+                                                                                                  1 
+                                                                                              crime 
+                                                                                                  1 
+                                                                                             crimin 
+                                                                                                  1 
+                                                                                              crimp 
+                                                                                                  1 
+                                                                                       cringeworthi 
+                                                                                                  1 
+                                                                                              crisi 
+                                                                                                  1 
+                                                                                          crisishit 
+                                                                                                  1 
+                                                                                           criteria 
+                                                                                                  1 
+                                                                                             critic 
+                                                                                                  1 
+                                                                                         cronenberg 
+                                                                                                  1 
+                                                                                              crook 
+                                                                                                  1 
+                                                                                              cross 
+                                                                                                  1 
+                                                                                       crosscountri 
+                                                                                                  1 
+                                                                                         crossdress 
+                                                                                                  1 
+                                                                                          crosshair 
+                                                                                                  1 
+                                                                                      crossplatform 
+                                                                                                  1 
+                                                                                             crotch 
+                                                                                                  1 
+                                                                                              crowd 
+                                                                                                  1 
+                                                                                          crowdfund 
+                                                                                                  1 
+                                                                                         crowdsourc 
+                                                                                                  1 
+                                                                                              crude 
+                                                                                                  1 
+                                                                                           crudeoil 
+                                                                                                  1 
+                                                                                              cruel 
+                                                                                                  1 
+                                                                                              crush 
+                                                                                                  1 
+                                                                                           crushmak 
+                                                                                                  1 
+                                                                                               cruz 
+                                                                                                  1 
+                                                                                            cryptic 
+                                                                                                  1 
+                                                                                            crystal 
+                                                                                                  1 
+                                                                                               ctos 
+                                                                                                  1 
+                                                                                              cubic 
+                                                                                                  1 
+                                                                                               cudd 
+                                                                                                  1 
+                                                                                            culprit 
+                                                                                                  1 
+                                                                                             cultiv 
+                                                                                                  1 
+                                                                                             cultur 
+                                                                                                  1 
+                                                                                         cumberland 
+                                                                                                  1 
+                                                                                                cup 
+                                                                                                  1 
+                                                                                              cupid 
+                                                                                                  1 
+                                                                                               curb 
+                                                                                                  1 
+                                                                                            curious 
+                                                                                                  1 
+                                                                                               curl 
+                                                                                                  1 
+                                                                                            currenc 
+                                                                                                  1 
+                                                                                               curs 
+                                                                                                  1 
+                                                                                               curv 
+                                                                                                  1 
+                                                                                               cush 
+                                                                                                  1 
+                                                                                               cusp 
+                                                                                                  1 
+                                                                                             custom 
+                                                                                                  1 
+                                                                                            cutback 
+                                                                                                  1 
+                                                                                               cute 
+                                                                                                  1 
+                                                                                              cuter 
+                                                                                                  1 
+                                                                                             cutoff 
+                                                                                                  1 
+                                                                                             cutter 
+                                                                                                  1 
+                                                                                         cuttingedg 
+                                                                                                  1 
+                                                                                                cuv 
+                                                                                                  1 
+                                                                                             cyclic 
+                                                                                                  1 
+                                                                                              daddi 
+                                                                                                  1 
+                                                                                            daeneri 
+                                                                                                  1 
+                                                                                              daili 
+                                                                                                  1 
+                                                  dailytbtdhxqrryqouamiemutclalbmtnewsinvestorscomt 
+                                                                                                  1 
+                                                                                              dairi 
+                                                                                                  1 
+                                                                                              dalen 
+                                                                                                  1 
+                                                                                              dalla 
+                                                                                                  1 
+                                                                                         dallasfort 
+                                                                                                  1 
+                                                                                                dam 
+                                                                                                  1 
+                                                                                              damag 
+                                                                                                  1 
+                                                                                             damian 
+                                                                                                  1 
+                                                                                               damp 
+                                                                                                  1 
+                                                                                             dampen 
+                                                                                                  1 
+                                                                                               danc 
+                                                                                                  1 
+                                                                                             danger 
+                                                                                                  1 
+                                                                                              dangl 
+                                                                                                  1 
+                                                                                               dani 
+                                                                                                  1 
+                                                                                             danica 
+                                                                                                  1 
+                                                                                               dare 
+                                                                                                  1 
+                                                                                             darien 
+                                                                                                  1 
+                                                                                               dark 
+                                                                                                  1 
+                                                                                             darken 
+                                                                                                  1 
+                                                                                             darker 
+                                                                                                  1 
+                                                                                               darl 
+                                                                                                  1 
+                                                                                               darn 
+                                                                                                  1 
+                                                                                             darren 
+                                                                                                  1 
+                                                                                              darth 
+                                                                                                  1 
+                                                                                             darwin 
+                                                                                                  1 
+                                                                                          dashboard 
+                                                                                                  1 
+                                                                                               data 
+                                                                                                  1 
+                                                                                           datacent 
+                                                                                                  1 
+                                 datathttpmoneymsncombusinessnewsarticleaspxfeedobrampdateampidtmsn 
+                                                                                                  1 
+                                              datathttpwwwskynewscomaubusinessnewsarticleaspxidtski 
+                                                                                                  1 
+datathttpwwwtradingroomcomauappsviewbreakingnewsarticleacpagedatanewsresearchpublishedcatfhtmlttrad 
+                                                                                                  1 
+                                                                                            data” 
+                                                                                                  1 
+ [ reached getOption("max.print") -- omitted 574906 entries ]
+
+> TDM.common = removeSparseTerms(TDM,0.1) # commonly occuring terms with allowed less sparsity between range 0-1
+> dim(TDM) # dimensions
+[1] 708381      4
+> dim(TDM.common)
+[1] 202   4
+> #inspect(TDM.common[1:1,1:1])
+> 
+> library(slam)
+> TDM.dense <- as.matrix(TDM.common) # attempt to turn its argument into matrix
+> TDM.dense
+                                                           Docs
+Terms                                                          1     2   3  4
+  act                                                        139   710   5  1
+  afford                                                      41   230   3  1
+  air                                                        322  1523  10  1
+  alec                                                         4    18   3  1
+  amazon                                                      96  1629   3  1
+  american                                                   472  1966   7  1
+  amid                                                       233  1033  14  1
+  among                                                      182   790  10  1
+  android                                                   1141  2650  21  1
+  angel                                                      241  2095 124 32
+  appl                                                       869  3023  10  1
+  april                                                      238  1340  19  1
+  art                                                         59   402   5  1
+  attend                                                     127   239   9  1
+  batteri                                                     46   585   4  2
+  battl                                                      321  1098   3  1
+  begin                                                      263   921   4  1
+  best                                                       446  1895  14  1
+  beta                                                        12   188   1  1
+  big                                                        624  2622  26  3
+  black                                                      170  1167   5  1
+  blogtbtdzuyejugbzemqtoujavnwbnmtwwwcagesideseatscomt        14     5   4  2
+  book                                                       163  1052   7  1
+  brother                                                    203   407   3  1
+  budget                                                      64   169   1  1
+  busi                                                      1932  8644  91  9
+  camera                                                     143   606   7  4
+  canada                                                     161   748   7  2
+  care                                                       134   978   3  1
+  cena                                                        37    10   2  1
+  choic                                                      221   203   9  1
+  cisco                                                        6    49   2  1
+  citi                                                       389  1839  15  1
+  climat                                                     454  1540   6  1
+  come                                                       654  2495  34  2
+  contemporari                                                 8     4   1  1
+  corp                                                        97   395   3  2
+  critic                                                     170   706   3  1
+  daili                                                     1522  7428  72  4
+  date                                                       395  1832  20  3
+  dead                                                       784  2005  49  1
+  death                                                      508  2016   2  1
+  denver                                                      77   429   4  1
+  design                                                     180   869  31  1
+  detail                                                     148   684   3  1
+  die                                                        451  2774  92  1
+  display                                                    119   530   2  1
+  don                                                         38   207   2  1
+  ebay                                                        18   411   2  1
+  ebook                                                       53   337   1  1
+  electron                                                   117   503   2  1
+  epoch                                                      108   618  20  6
+  examinertttdkfdtevlerbbmmrivezaqmtthefootballexaminercomt   18     2   1  2
+  excel                                                       13    74   1  1
+  fda                                                         91   416   3  1
+  fear                                                       114   576   3  1
+  featur                                                     305  1597  17  4
+  final                                                     1011  3261  20  4
+  fire                                                       430  2049   6  1
+  flood                                                       38   212   2  1
+  footbal                                                    161   470   5  5
+  found                                                      497  1435  27  1
+  four                                                       237   623   7  1
+  free                                                       440  2483  22  1
+  friend                                                     107   848   4  1
+  fun                                                         79   284   3  1
+  futur                                                      388  2224   6  1
+  galaxi                                                    1910  4256  20  3
+  game                                                       795  3015  42  2
+  gamer                                                       69   224   3  1
+  gear                                                       183   630  13  1
+  get                                                       1699  6985  80  1
+  girl                                                       236  1236  10  1
+  goodby                                                      44   189   7  1
+  guardian                                                   227   537   2  1
+  gyllenha                                                     2     6   1  1
+  hall                                                        74   542   5  1
+  head                                                       305  1322  11  1
+  hit                                                        789  3184  25  1
+  htc                                                        245   611   9  1
+  improv                                                     165   751   8  1
+  inc                                                        377  2029  16  2
+  inctbtdzuyejugbzemqtoujavnwbnmtwwwwrestlinginccomt           4    14   4  1
+  india                                                      128  1166  26  1
+  intellectu                                                   2    31   1  2
+  ipad                                                       367  1425   7  1
+  iphon                                                      611  1997  11  1
+  iwatch                                                      92   156   1  1
+  jake                                                         6    51   2  1
+  jame                                                        90   853   1  1
+  john                                                       132   604  10  1
+  journal                                                    501  2431  24  2
+  kardashian                                                 539  5143  90  1
+  kitkat                                                     134   274   3  1
+  lake                                                       114   517   5  1
+  law                                                        194   608   5  1
+  leak                                                       328   775   2  1
+  left                                                        81   328   3  1
+  life                                                       283  1421   8  1
+  lil                                                          4    14   1  2
+  live                                                       923  2677  47  2
+  lung                                                        39    71   1  1
+  lwren                                                      104   411   3  1
+  make                                                       980  4291  24  1
+  market                                                     715  2987  21  4
+  met                                                        394   793   9  1
+  microsoft                                                  473  1716  16  1
+  mini                                                       393   428   1  1
+  mobil                                                      242  1360   7  2
+  money                                                      285   585   5  1
+  morn                                                       555  2141  25  2
+  mother                                                     465   891   9  1
+  motorola                                                    84   204   3  1
+  move                                                       418  1546   7  1
+  nation                                                     234   931   7  1
+  net                                                        213  1552   5  1
+  never                                                      108   591   6  1
+  new                                                       3787 16640 190  4
+  news                                                      2414 10248 100  3
+  next                                                       589  2199  30  3
+  nicki                                                       49   188   5  1
+  night                                                      287   974   6  1
+  nokia                                                      189   591   1  1
+  note                                                       326   814   5  2
+  offer                                                      571  2600  28  1
+  offici                                                     370  1996  51  1
+  old                                                        168   544  14  1
+  one                                                       1322  4304  88  2
+  philippin                                                   58   327   3  1
+  phone                                                      562  1886   6  2
+  photo                                                      338  1714   4  1
+  play                                                       379  1493  12  1
+  post                                                       662  3870  47  1
+  press                                                      820  3622  39  1
+  price                                                     1326  5404  89  4
+  question                                                   201   643   5  1
+  raw                                                         73    97   2  1
+  releas                                                    1093  3450  40  4
+  report                                                    1165  4786  39  1
+  research                                                   249   801  12  7
+  review                                                     645  3130  17  1
+  robin                                                      128   249   3  1
+  rock                                                       163   857  13  1
+  role                                                       127   516  13  1
+  round                                                      168   297   4  1
+  rumor                                                      248   863  13  2
+  russel                                                     120   233   6  3
+  sam                                                         27    95   1  1
+  samsung                                                    908  2131  10  3
+  sap                                                         14    16   8  1
+  say                                                       1476  7469  76  3
+  scienc                                                     271   908   8  1
+  scott                                                      204   904   3  1
+  seat                                                       126   289   9  2
+  sentinel                                                    15   198  25  7
+  seri                                                       235   851  10  3
+  share                                                      712  3292  14  1
+  shot                                                       249   441   6  1
+  softwar                                                    118   299   3  1
+  solang                                                      94   374   7  1
+  soni                                                       124   376   6  4
+  star                                                      1374  6674 226  4
+  state                                                      286  1523   3  1
+  street                                                    1062  3886  39  3
+  studi                                                      349  1705   3  1
+  success                                                    111   367   1  1
+  sun                                                        102   529   9  3
+  sunday                                                      81   355   5  1
+  support                                                    250  1214   3  1
+  system                                                     143   683   3  1
+  tablet                                                     235   699   2  1
+  tech                                                       330  1483   7  4
+  thick                                                      344   329   3  1
+  thought                                                     50   281   1  1
+  thttponlinewsjcomarticleprcohtmltwal                        24    78   3  1
+  time                                                      1751  7163  70  8
+  tmobil                                                     212   452   6  2
+  toni                                                        48   360   1  1
+  tonight                                                    224  1244  10  1
+  tower                                                       11    49   1  1
+  toyota                                                      61   227   5  1
+  tribun                                                      22   174   4  2
+  twin                                                       114   314   1  1
+  unexpect                                                    37   151   2  1
+  unit                                                       165   747   4  1
+  unveil                                                     491  1663  21  1
+  upcom                                                       56   282   7  1
+  updat                                                      651  2199  17  1
+  usher                                                       31   102  10  1
+  valley                                                     170   780   5  1
+  video                                                      583  3424  23  1
+  watch                                                      522  2474  18  1
+  wayn                                                        70   470   2  1
+  weather                                                     99   549   1  1
+  web                                                        106   561  10  2
+  whirlpool                                                    1     1   3  1
+  window                                                     569  1153   5  1
+  wire                                                        64   385   8  1
+  xbox                                                       395  1189  55  3
+  york                                                       753  3375  41  2
+  young                                                      255   730  15  1
+  ”                                                         31   118   6  1
+> #summary(TDM.dense)
+> 
+> # Object.size provides an estimate of the memory that is being used to store an R object
+> object.size(TDM.common)
+26576 bytes
+> object.size(TDM.dense)
+19040 bytes
+> 
+> library(wordcloud)
+> library(RColorBrewer)
+> palette <- brewer.pal(9,"YlGnBu")[-(1:4)] #brewer.pal: function for color Palette
+> wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1, color= palette)
+Warning messages:
+1: In wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1,  :
+  news could not be fit on page. It will not be plotted.
+2: In wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1,  :
+  samsung could not be fit on page. It will not be plotted.
+3: In wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1,  :
+  daili could not be fit on page. It will not be plotted.
+4: In wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1,  :
+  video could not be fit on page. It will not be plotted.
+5: In wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1,  :
+  busi could not be fit on page. It will not be plotted.
+> 
+> #Convert dtm to matrix
+> m <- as.matrix(DTM)
+> 
+> #Shorten rownames for display purposes
+> rownames(m) <- paste(substring(rownames(m),1,3),rep("..",nrow(m)),
++                      substring(rownames(m),
++                                nchar(rownames(m))-1,nchar(rownames(m))-2))  #paste function: concatenate vectors after converting to character.
+> 
+> #Compute distance between document vectors
+> d <- dist(m)
+> d
+           1 ..       2 ..       3 .. 
+2 ..  39911.8057                      
+3 ..  13217.1180 50737.8294           
+4 ..  13638.6365 51246.5676   815.0982
+> 
+> #Run Hierarchical Clustering using Ward's method
+> 
+> suppressPackageStartupMessages(library(dendextend))
+> 
+> library(cluster)
+> library(ggplot2)
+> library(factoextra)
+> library(colorspace)
+> library(dendextend)
+> 
+> # Plot with Ward.D method
+> group <- hclust(d,method = "ward.D")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group)
+> dend %>% set("branches_k_color") %>% plot( main="ward.D")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Ward.D2 method
+> group1 <- hclust(d,method = "ward.D2")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group1)
+> dend %>% set("branches_k_color") %>% plot( main="ward.D2")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Single method
+> group2 <- hclust(d,method = "single")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group2)
+> dend %>% set("branches_k_color") %>% plot( main="Single")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Complete method
+> group3 <- hclust(d,method = "complete")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group3)
+> dend %>% set("branches_k_color") %>% plot( main="Complete")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Average method
+> group4 <- hclust(d,method = "average")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group4)
+> dend %>% set("branches_k_color") %>% plot( main="Average")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with mcquitty method
+> group5 <- hclust(d,method = "mcquitty")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group5)
+> dend %>% set("branches_k_color") %>% plot( main="Mcquitty")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with median method
+> group6 <- hclust(d,method = "median")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group6)
+> dend %>% set("branches_k_color") %>% plot( main="Median")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with centroid method
+> group7 <- hclust(d,method = "centroid")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group7)
+> dend %>% set("branches_k_color") %>% plot( main="Centroid")
+> dend %>% rect.dendrogram(k = 3, horiz = TRUE, border = 10, lty = 15, lwd = 20)

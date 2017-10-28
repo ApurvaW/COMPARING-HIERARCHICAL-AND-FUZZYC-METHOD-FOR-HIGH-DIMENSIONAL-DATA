@@ -1,0 +1,310 @@
+> library(tm) #Text Mining Package
+> library(readxl)
+Warning message:
+package ‘readxl’ was built under R version 3.4.1 
+> Dress <-read_excel("~/Masters Projet/Dresses-attributes_sales/Attribute DataSet.xlsx")
+> 
+> View(Dress)
+> ## Dress Attribute Dataset File 
+> length(Dress)
+[1] 14
+> head(Dress)
+# A tibble: 6 x 14
+    Dress_ID    Style   Price Rating  Size Season NeckLine SleeveLength waiseline
+       <dbl>    <chr>   <chr>  <dbl> <chr>  <chr>    <chr>        <chr>     <chr>
+1 1006032852     Sexy     Low    4.6     M Summer   o-neck    sleevless    empire
+2 1212192089   Casual     Low    0.0     L Summer   o-neck        Petal   natural
+3 1190380701  vintage    High    0.0     L Automn   o-neck         full   natural
+4  966005983    Brief Average    4.6     L Spring   o-neck         full   natural
+5  876339541     cute     Low    4.5     M Summer   o-neck    butterfly   natural
+6 1068332458 bohemian     Low    0.0     M Summer   v-neck    sleevless    empire
+# ... with 5 more variables: Material <chr>, FabricType <chr>, Decoration <chr>,
+#   `Pattern Type` <chr>, Recommendation <dbl>
+> tail(Dress)
+# A tibble: 6 x 14
+   Dress_ID  Style   Price Rating  Size Season  NeckLine SleeveLength waiseline Material
+      <dbl>  <chr>   <chr>  <dbl> <chr>  <chr>     <chr>        <chr>     <chr>    <chr>
+1 990559192  Brief Average    4.7     M winter    o-neck   halfsleeve   natural  acrylic
+2 713391965 Casual     Low    4.7     M Spring    o-neck         full   natural polyster
+3 722565148   Sexy     Low    4.3  free Summer    o-neck         full    empire   cotton
+4 532874347 Casual Average    4.7     M Summer    v-neck         full    empire   cotton
+5 655464934 Casual Average    4.6     L winter boat-neck    sleevless    empire     silk
+6 919930954 Casual     Low    4.4  free Summer    v-neck        short    empire   cotton
+# ... with 4 more variables: FabricType <chr>, Decoration <chr>, `Pattern Type` <chr>,
+#   Recommendation <dbl>
+> Dress = Dress[-(1)]
+> Dress= Dress[-(13:length(Dress))]
+> Dress <- Dress[-(3)]
+> length(Dress)
+[1] 11
+> 
+> doc.vec <- VectorSource(Dress) # Construct a Source of Vector as input
+> doc.corpus <- Corpus(doc.vec) # Corpus- Function for Natural Language document
+> summary(doc.corpus)
+   Length Class             Mode
+1  2      PlainTextDocument list
+2  2      PlainTextDocument list
+3  2      PlainTextDocument list
+4  2      PlainTextDocument list
+5  2      PlainTextDocument list
+6  2      PlainTextDocument list
+7  2      PlainTextDocument list
+8  2      PlainTextDocument list
+9  2      PlainTextDocument list
+10 2      PlainTextDocument list
+11 2      PlainTextDocument list
+> #tm_map: function for transformation of document
+> doc.corpus <- tm_map(doc.corpus, content_transformer(tolower))
+> doc.corpus <- tm_map(doc.corpus,removePunctuation)
+> doc.corpus <- tm_map(doc.corpus, removeNumbers)
+> doc.corpus <- tm_map(doc.corpus, removeWords, stopwords("english"))
+> 
+> library(SnowballC) #Comparison of Vocabulary
+> doc.corpus <- tm_map(doc.corpus, stemDocument)
+> doc.corpus <- tm_map(doc.corpus, stripWhitespace)
+> inspect(doc.corpus[8])
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] cnull microfib polyst silk chiffonfabr null cotton polyst cotton nylon polyst nylon null cotton cotton cotton null cotton milksilk cotton null cotton cotton polyst cotton null cotton polyst chiffonfabr polyst silk linen null null cotton null cotton cotton cotton cotton rayon lycra cotton cotton null polyst cotton milksilk null null milksilk polyst polyst polyst cotton cotton null polyst polyst rayon cotton polyst null cotton cotton silk polyst polyst polyst cotton polyst cotton cotton polyst chiffonfabr cotton cotton null polyst polyst polyst cotton null polyst null null rayon null cotton cotton cotton cotton silk null silk silk null null cotton cotton null polyst null cotton cotton polyst cotton cotton null null cotton polyst null null null cotton cotton silk polyst mix null null cotton cotton null chiffonfabr cotton null cotton acryl polyst null chiffonfabr null silk polyst polyst cotton null null chiffonfabr null cotton cotton null cotton polyst chiffonfabr cotton chiffonfabr co... <truncated>
+> inspect(doc.corpus[8])
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+[1] cnull microfib polyst silk chiffonfabr null cotton polyst cotton nylon polyst nylon null cotton cotton cotton null cotton milksilk cotton null cotton cotton polyst cotton null cotton polyst chiffonfabr polyst silk linen null null cotton null cotton cotton cotton cotton rayon lycra cotton cotton null polyst cotton milksilk null null milksilk polyst polyst polyst cotton cotton null polyst polyst rayon cotton polyst null cotton cotton silk polyst polyst polyst cotton polyst cotton cotton polyst chiffonfabr cotton cotton null polyst polyst polyst cotton null polyst null null rayon null cotton cotton cotton cotton silk null silk silk null null cotton cotton null polyst null cotton cotton polyst cotton cotton null null cotton polyst null null null cotton cotton silk polyst mix null null cotton cotton null chiffonfabr cotton null cotton acryl polyst null chiffonfabr null silk polyst polyst cotton null null chiffonfabr null cotton cotton null cotton polyst chiffonfabr cotton chiffonfabr co... <truncated>
+> TDM <- TermDocumentMatrix(doc.corpus) # row: terms(words) column: document(webpages)
+> TDM
+<<TermDocumentMatrix (terms: 142, documents: 11)>>
+Non-/sparse entries: 155/1407
+Sparsity           : 90%
+Maximal term length: 14
+Weighting          : term frequency (tf)
+> inspect(TDM[1:6,1:6])
+<<TermDocumentMatrix (terms: 6, documents: 6)>>
+Non-/sparse entries: 6/30
+Sparsity           : 83%
+Maximal term length: 8
+Weighting          : term frequency (tf)
+Sample             :
+          Docs
+Terms        1 2 3 4 5 6
+  bohemian  24 0 0 0 0 0
+  brief     18 0 0 0 0 0
+  casual   232 0 0 0 0 0
+  csexi      1 0 0 0 0 0
+  cute      45 0 0 0 0 0
+  fashion    1 0 0 0 0 0
+> DTM <- DocumentTermMatrix(doc.corpus) # row: document(webpages) column: terms(words)
+> inspect(DTM[1:6,1:6])
+<<DocumentTermMatrix (documents: 6, terms: 6)>>
+Non-/sparse entries: 6/30
+Sparsity           : 83%
+Maximal term length: 8
+Weighting          : term frequency (tf)
+Sample             :
+    Terms
+Docs bohemian brief casual csexi cute fashion
+   1       24    18    232     1   45       1
+   2        0     0      0     0    0       0
+   3        0     0      0     0    0       0
+   4        0     0      0     0    0       0
+   5        0     0      0     0    0       0
+   6        0     0      0     0    0       0
+> findFreqTerms(TDM,1000)  #each of this words occurred more than 1500 times
+character(0)
+> findAssocs(TDM, "like", 0.9)
+$like
+numeric(0)
+
+> TDM.common = removeSparseTerms(TDM,0.9) # commonly occuring terms
+> dim(TDM) # dimensions
+[1] 142  11
+> dim(TDM.common)
+[1]  7 11
+> #inspect(TDM.common[1:6,1:6])
+> 
+> library(slam)
+> TDM.dense <- as.matrix(TDM) # attempt to turn its argument into matrix
+> TDM.dense
+                Docs
+Terms              1   2   3   4   5   6   7   8   9  10  11
+  bohemian        24   0   0   0   0   0   0   0   0   0   0
+  brief           18   0   0   0   0   0   0   0   0   0   0
+  casual         232   0   0   0   0   0   0   0   0   0   0
+  csexi            1   0   0   0   0   0   0   0   0   0   0
+  cute            45   0   0   0   0   0   0   0   0   0   0
+  fashion          1   0   0   0   0   0   0   0   0   0   0
+  flare            2   0   0   0   0   0   0   0   0   0   0
+  novelti          8   0   0   0   0   0   0   0   0   0   0
+  parti           51   0   0   0   0   0   0   0   0   0   0
+  sexi            75   0   0   0   0   0   0   0   0   0   0
+  vintag          25   0   0   0   0   0   0   0   0   0   0
+  work            17   0   0   0   0   0   0   0   0   0   0
+  averag           0 252   0   0   0   0   0   0   0   0   0
+  clow             0   1   0   0   0   0   0   0   0   0   0
+  high             0  21   0   0   0   0   0   0   0   0   0
+  low              0 173   0   0   0   0   0   0   0   0   0
+  medium           0  30   0   0   0   0   0   0   0   0   0
+  veryhigh         0  21   0   0   0   0   0   0   0   0   0
+  free             0   0 173   0   0   0   0   0   0   0   0
+  small            0   0   1   0   0   0   0   0   0   0   0
+  automn           0   0   0  61   0   0   0   0   0   0   0
+  autumn           0   0   0   8   0   0   0   0   0   0   0
+  csummer          0   0   0   1   0   0   0   0   0   0   0
+  spring           0   0   0 124   0   0   0   0   0   0   0
+  summer           0   0   0 159   0   0   0   0   0   0   0
+  winter           0   0   0 145   0   0   0   0   0   0   0
+  backless         0   0   0   0   1   0   0   0   0   0   0
+  boatneck         0   0   0   0  19   0   0   0   0   0   0
+  bowneck          0   0   0   0  10   0   0   0   0   0   0
+  coneck           0   0   0   0   1   0   0   0   0   0   0
+  halter           0   0   0   0   1   0   0   0   0   0   0
+  mandarincollor   0   0   0   0   1   0   0   0   0   0   0
+  null             0   0   0   0   2   2  86 126 265 235 108
+  oneck            0   0   0   0 270   0   0   0   0   0   0
+  open             0   0   0   0   3   0   0   0   0   0   0
+  peterpancollor   0   0   0   0   6   0   0   0   0   0   0
+  ruffl            0   0   0   0   1   0   0   0   0  16   0
+  scoop            0   0   0   0   2   0   0   0   0   0   0
+  slashneck        0   0   0   0  25   0   0   0   0   0   0
+  sqarecollor      0   0   0   0   5   0   0   0   0   0   0
+  sweetheart       0   0   0   0  15   0   0   0   0   0   0
+  turndowncollor   0   0   0   0  13   1   0   0   0   0   0
+  vneck            0   0   0   0 124   0   0   0   0   0   0
+  butterfli        0   0   0   0   0   1   0   0   0   0   0
+  capsleev         0   0   0   0   0   5   0   0   0   0   0
+  csleevless       0   0   0   0   0   1   0   0   0   0   0
+  full             0   0   0   0   0  97   0   0   0   0   0
+  half             0   0   0   0   0   1   0   0   0   0   0
+  halfsleev        0   0   0   0   0  35   0   0   0   0   0
+  petal            0   0   0   0   0   1   0   0   0   0   0
+  short            0   0   0   0   0  96   0   0   0   0   0
+  sleeevless       0   0   0   0   0   3   0   0   0   0   0
+  sleeveless       0   0   0   0   0   5   0   0   0   0   0
+  sleevless        0   0   0   0   0 222   0   0   0   0   0
+  sleveless        0   0   0   0   0   1   0   0   0   0   0
+  threequart       0   0   0   0   0  17   0   0   0   0   0
+  threequat        0   0   0   0   0   1   0   0   0   0   0
+  thressqatar      0   0   0   0   0  10   0   0   0   0   0
+  urndowncollor    0   0   0   0   0   1   0   0   0   0   0
+  cempir           0   0   0   0   0   0   1   0   0   0   0
+  drop             0   0   0   0   0   0   4   0   0   0   0
+  empir            0   0   0   0   0   0 103   0   0   0   0
+  natur            0   0   0   0   0   0 304   0   0   0   0
+  princess         0   0   0   0   0   0   1   0   0   0   0
+  acryl            0   0   0   0   0   0   0   3   0   0   0
+  cashmer          0   0   0   0   0   0   0   4   0   0   0
+  chiffonfabr      0   0   0   0   0   0   0  25   0   0   0
+  cnull            0   0   0   0   0   0   0   1   0   0   0
+  cotton           0   0   0   0   0   0   0 152   0   0   0
+  knit             0   0   0   0   0   0   0   1   2   0   0
+  lace             0   0   0   0   0   0   0   1   1  70   0
+  linen            0   0   0   0   0   0   0   3   0   0   0
+  lycra            0   0   0   0   0   0   0   3   0   0   0
+  microfib         0   0   0   0   0   0   0   3   0   0   0
+  milksilk         0   0   0   0   0   0   0   5   0   0   0
+  mix              0   0   0   0   0   0   0  12   0   0   0
+  modal            0   0   0   0   0   0   0   1   0   0   0
+  model            0   0   0   0   0   0   0   1   0   0   0
+  nylon            0   0   0   0   0   0   0  10   0   0   0
+  polyst           0   0   0   0   0   0   0  99   0   0   0
+  rayon            0   0   0   0   0   0   0  10   0   0   0
+  shiffon          0   0   0   0   0   0   0   2   9   0   0
+  silk             0   0   0   0   0   0   0  26   0   0   0
+  sill             0   0   0   0   0   0   0   1   0   0   0
+  spandex          0   0   0   0   0   0   0   5   0   0   0
+  visco            0   0   0   0   0   0   0   2   0   0   0
+  wool             0   0   0   0   0   0   0   1   0   0   0
+  batik            0   0   0   0   0   0   0   0   2   0   0
+  broadcloth       0   0   0   0   0   0   0   0  31   0   0
+  cchiffon         0   0   0   0   0   0   0   0   1   0   0
+ [ reached getOption("max.print") -- omitted 52 rows ]
+> # Object.size provides an estimate of the memory that is being used to store an R object
+> object.size(TDM.common)
+3264 bytes
+> object.size(TDM.dense)
+22080 bytes
+> 
+> library(wordcloud)
+> library(RColorBrewer)
+> palette <- brewer.pal(9,"PuBuGn")[-(1:4)] #brewer.pal: function for color Palette
+> 
+> wordcloud(rownames(TDM.dense), rowSums(TDM.dense), min.freq = 1, color= palette)
+> 
+> #Convert dtm to matrix
+> m <- as.matrix(DTM)
+> #Shorten rownames for display purposes
+> rownames(m) <- paste(substring(rownames(m),1,3),rep("..",nrow(m)),
++                      substring(rownames(m),
++                                nchar(rownames(m))-12,nchar(rownames(m))-4))  #paste function: concatenate vectors after converting to character.
+> #Compute distance between document vectors
+> d <- dist(m)
+> 
+> #Run Hierarchical Clustering using Ward's method
+> 
+> suppressPackageStartupMessages(library(dendextend))
+> 
+> library(cluster)
+> library(ggplot2)
+> library(factoextra)
+> library(colorspace)
+> library(dendextend)
+> 
+> # Plot with Ward.D method
+> group <- hclust(d,method = "ward.D")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group)
+> dend %>% set("branches_k_color") %>% plot( main="ward.D")
+> dend %>% rect.dendrogram(k = 7, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Ward.D2 method
+> group1 <- hclust(d,method = "ward.D2")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group1)
+> dend %>% set("branches_k_color") %>% plot( main="ward.D2")
+> dend %>% rect.dendrogram(k = 7, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Single method
+> group2 <- hclust(d,method = "single")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group2)
+> dend %>% set("branches_k_color") %>% plot( main="Single")
+> dend %>% rect.dendrogram(k = 7, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Complete method
+> group3 <- hclust(d,method = "complete")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group3)
+> dend %>% set("branches_k_color") %>% plot( main="Complete")
+> dend %>% rect.dendrogram(k = 7, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with Average method
+> group4 <- hclust(d,method = "average")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group4)
+> dend %>% set("branches_k_color") %>% plot( main="Average")
+> dend %>% rect.dendrogram(k = 7, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with mcquitty method
+> group5 <- hclust(d,method = "mcquitty")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group5)
+> dend %>% set("branches_k_color") %>% plot( main="Mcquitty")
+> dend %>% rect.dendrogram(k = 7, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with median method
+> group6 <- hclust(d,method = "median")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group6)
+> dend %>% set("branches_k_color") %>% plot( main="Median")
+> dend %>% rect.dendrogram(k = 7, horiz = TRUE, border = 8, lty = 5, lwd = 2)
+> 
+> # Plot with centroid method
+> group7 <- hclust(d,method = "centroid")
+> #plot dendogram, use hang to ensure that labels fall below tree
+> dend<- as.dendrogram(group7)
+> dend %>% set("branches_k_color") %>% plot( main="Centroid")
+> dend %>% rect.dendrogram(k = 7, horiz = TRUE, border = 10, lty = 15, lwd = 20)
+> 
